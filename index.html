@@ -3,115 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>실시간 인기 종목</title>
+    <title>인기종목 TOP5</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Pretendard', sans-serif; background-color: #f2f4f6; }
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
         
-        /* 로고 스타일링 (임: 주황색, M: 작게) */
-        .logo-iam { color: #333d4b; font-weight: 700; font-size: 24px; }
-        .logo-im { color: #ff6b00; } /* 주황색 */
-        .logo-m { font-size: 16px; font-weight: 400; color: #8b95a1; margin-left: 2px; } /* 작게 */
+        body { 
+            font-family: 'Pretendard', sans-serif; 
+            background-color: #f2f4f6; /* 회색 배경 고정 */
+            margin: 0; 
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
 
-        /* 종목 카드 스타일 */
+        .main-container {
+            width: 100%;
+            max-width: 480px;
+            background-color: white; /* 흰색 배경 영역 고정 */
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* 영역 밖 내용 숨김 */
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            z-index: 10; /* 헤더가 리스트 위에 오도록 */
+        }
+
+        .logo-iam { font-weight: 700; font-size: 24px; color: #333d4b; }
+        .logo-im { color: #ff6b00; }
+        .logo-m { font-size: 16px; font-weight: 400; color: #8b95a1; }
+
+        .refresh-btn { cursor: pointer; transition: transform 0.2s; }
+        .refresh-btn:active { transform: scale(0.9); }
+
+        /* 애니메이션 대상 영역: 텍스트가 있는 카드 리스트 */
+        #stock-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transform: translateY(-100%); /* 처음에 위쪽으로 완전히 숨김 */
+            opacity: 0;
+            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease;
+        }
+
+        /* 애니메이션 실행 클래스 (데이터 로드 후 추가됨) */
+        #stock-list.loaded {
+            transform: translateY(0); /* 제자리로 이동 */
+            opacity: 1;
+        }
+
         .stock-card { 
-            background: white; border-radius: 20px; 
-            transition: transform 0.2s, opacity 0.3s; 
-            opacity: 0; /* 처음에 숨김 */
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            padding: 12px 4px; /* 간격 축소 */
         }
-        .stock-card:active { transform: scale(0.98); }
-        .up { color: #f04452; }
+        
+        .up { color: #f04452; } 
         .down { color: #3182f6; }
+        .symbol { width: 4px; height: 16px; border-radius: 2px; }
 
-        /* '따다닥' 애니메이션 정의 */
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .bottom-btn { 
+            background: #3182f6; 
+            color: white; 
+            width: 100%; 
+            padding: 16px; 
+            border-radius: 16px; 
+            font-weight: 600; 
+            text-align: center; 
+            margin-top: 24px; 
+            display: block; 
+            text-decoration: none; 
+            transition: background 0.2s;
         }
-        .animate-card { animation: fadeInDown 0.4s ease-out forwards; }
+        .bottom-btn:hover { background: #1b64da; }
     </style>
 </head>
-<body class="p-4">
-    <div class="max-w-md mx-auto">
-        <header class="mb-6 mt-4 flex items-center justify-between">
-            <div>
-                <span class="logo-iam">아<span class="logo-im">임</span>차트</span><span class="logo-m">M</span>
-            </div>
-            <div class="text-right">
-                <p class="text-xs text-gray-500" id="update-time">불러오는 중...</p>
-                <p class="text-xs text-blue-500 font-semibold">20초마다 자동 갱신</p>
+<body>
+    <div class="main-container">
+        <header>
+            <div><span class="logo-iam">아<span class="logo-im">임</span>차트</span><span class="logo-m">M</span></div>
+            <div class="refresh-btn" onclick="manualRefresh()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b95a1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
             </div>
         </header>
+        
+        <div id="stock-list"></div>
 
-        <div id="stock-list" class="space-y-3">
-            </div>
+        <a href="https://www.iamchart.co.kr" class="bottom-btn">아임차트M에서 예상 고저가 확인하기</a>
     </div>
 
     <script>
-        // ⚠️ 중요: 사용자님의 구글 앱스 스크립트 배포 URL로 교체하세요!
-        const API_URL = "https://script.google.com/macros/s/AKfycbztf1UcjdC5kr6teY1xzbT2tOrXV82OEkGZV15tjBwpKR3qFvfcUJvZPiVtTDx8qGmBDQ/exec"; 
+        // ⚠️ 사용자님의 구글 앱스 스크립트 'exec' URL로 교체하세요!
+        const API_URL = "여기에_새로_배포한_exec_주소를_넣으세요"; 
+        const stockListArea = document.getElementById('stock-list');
 
-        async function fetchStocks() {
+        async function load() {
             try {
-                // 데이터 로딩 중 표시
-                document.getElementById('update-time').innerText = "갱신 중...";
+                // 애니메이션 리셋 (다시 올라가도록)
+                stockListArea.classList.remove('loaded');
                 
-                const response = await fetch(API_URL);
-                const data = await response.json();
+                const res = await fetch(API_URL);
+                const data = await res.json();
                 
-                const list = document.getElementById('stock-list');
-                list.innerHTML = ''; // 기존 리스트 초기화
+                // 스크롤 탑으로 이동
+                stockListArea.innerHTML = '';
                 
-                // 데이터 반복 처리
-                data.forEach((stock, index) => {
-                    const isUp = stock.status === "상승";
-                    const colorClass = isUp ? 'up' : (stock.status === "하락" ? 'down' : 'text-gray-500');
-                    const prefix = isUp ? '+' : '';
+                data.forEach((s) => {
+                    const colorClass = s.status === "상승" ? 'up' : (s.status === "하락" ? 'down' : 'text-gray-500');
+                    const bgColorClass = s.status === "상승" ? 'bg-red-100' : (s.status === "하락" ? 'bg-blue-100' : 'bg-gray-100');
+                    const prefix = s.status === "상승" ? '+' : '';
                     
-                    // F열 등락액 가격 데이터 처리
-                    const formattedChange = Number(stock.change).toLocaleString();
-
-                    // 카드 HTML 생성
-                    const cardHtml = `
-                        <div class="stock-card p-5 flex items-center justify-between shadow-sm" style="animation-delay: ${index * 0.1}s;">
-                            <div class="flex items-center space-x-4">
-                                <span class="text-lg font-bold text-gray-400 w-6">${stock.rank}</span>
+                    stockListArea.innerHTML += `
+                        <div class="stock-card">
+                            <div class="flex items-center gap-3">
+                                <div class="symbol ${bgColorClass}"></div>
+                                <span class="font-bold text-gray-400 text-lg w-6 text-center">${s.rank}</span>
                                 <div>
-                                    <h3 class="font-bold text-gray-900">${stock.name}</h3>
-                                    <p class="text-xs text-gray-500">거래량 ${stock.volume}</p>
+                                    <div class="font-bold text-gray-800">${s.name}</div>
+                                    <div class="text-xs text-gray-400">거래량 ${s.volume}</div>
                                 </div>
                             </div>
                             <div class="text-right">
-                                <p class="font-bold text-gray-900">${Number(stock.price).toLocaleString()}원</p>
-                                <p class="text-sm font-semibold ${colorClass}">
-                                    ${prefix}${stock.rate} (${prefix}${formattedChange}원)
-                                </p>
+                                <div class="font-bold text-gray-900">${Number(s.price).toLocaleString()}원</div>
+                                <div class="text-sm font-bold ${colorClass}">${prefix}${s.rate} (${prefix}${Number(s.change).toLocaleString()}원)</div>
                             </div>
-                        </div>
-                    `;
-                    list.innerHTML += cardHtml;
+                        </div>`;
                 });
 
-                // 애니메이션 클래스 추가 (데이터 로딩 후)
-                const cards = document.querySelectorAll('.stock-card');
-                cards.forEach(card => card.classList.add('animate-card'));
+                // 데이터 로드 완료 후 애니메이션 실행 클래스 추가 (아래로 내려옴)
+                setTimeout(() => {
+                    stockListArea.classList.add('loaded');
+                }, 50);
 
-                // 업데이트 시간 기록
-                document.getElementById('update-time').innerText = new Date().toLocaleTimeString() + " 기준";
-
-            } catch (error) {
-                console.error("데이터 로딩 실패:", error);
-                document.getElementById('update-time').innerText = "갱신 실패";
+            } catch (e) { 
+                console.log("데이터 갱신 중 오류 발생"); 
+                stockListArea.innerHTML = '<div class="text-center text-gray-500 py-10">데이터를 불러오지 못했습니다.</div>';
+                stockListArea.classList.add('loaded'); // 에러 메시지라도 보여줌
             }
         }
 
+        // 수동 새로고침 함수
+        function manualRefresh() {
+            load();
+        }
+
         // 최초 실행
-        fetchStocks();
-
-        // 20초마다 자동 실행 설정 (20,000ms)
-        setInterval(fetchStocks, 20000); 
-
+        load();
+        
+        // 20초 자동 갱신
+        setInterval(load, 20000); 
     </script>
 </body>
 </html>
