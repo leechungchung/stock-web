@@ -66,7 +66,8 @@
         </header>
         
         <div id="slider-wrapper">
-            </div>
+            <div class="w-full text-center py-40 text-gray-400">데이터를 불러오는 중...</div>
+        </div>
 
         <div class="dots" id="dots-container"></div>
     </div>
@@ -76,84 +77,11 @@
     </div>
 
     <script>
-        // ⚠️ 배포 주소를 입력하세요
+        // 현재 사용 중이신 API 주소
         const API_URL = "https://script.google.com/macros/s/AKfycbztf1UcjdC5kr6teY1xzbT2tOrXV82OEkGZV15tjBwpKR3qFvfcUJvZPiVtTDx8qGmBDQ/exec"; 
         let currentPage = 0;
 
         async function loadData() {
             try {
+                // 구글 앱스 스크립트 호출 시 redirect 처리를 브라우저에 맡깁니다.
                 const res = await fetch(API_URL);
-                const data = await res.json();
-                renderSlider(data);
-            } catch (e) { console.error("데이터 로드 실패"); }
-        }
-
-        function renderSlider(data) {
-            const wrapper = document.getElementById('slider-wrapper');
-            const dotsContainer = document.getElementById('dots-container');
-            wrapper.innerHTML = '';
-            dotsContainer.innerHTML = '';
-
-            const itemsPerPage = 5;
-            const totalPages = Math.ceil(data.length / itemsPerPage);
-
-            for (let i = 0; i < totalPages; i++) {
-                const pageDiv = document.createElement('div');
-                pageDiv.className = `page ${i === 0 ? 'active' : ''}`;
-                
-                const pageData = data.slice(i * itemsPerPage, (i + 1) * itemsPerPage);
-                pageData.forEach(s => {
-                    const color = s.status === "상승" ? 'up' : (s.status === "하락" ? 'down' : 'text-gray-500');
-                    const prefix = s.status === "상승" ? '+' : '';
-                    pageDiv.innerHTML += `
-                        <div class="stock-card">
-                            <div class="flex items-center gap-3">
-                                <span class="font-bold text-gray-300 text-lg w-6">${s.rank}</span>
-                                <div>
-                                    <div class="font-bold text-gray-800">${s.name}</div>
-                                    <div class="text-xs text-gray-400">거래량 ${s.volume}</div>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <div class="font-bold text-gray-900">${Number(s.price).toLocaleString()}원</div>
-                                <div class="text-sm font-bold ${color}">${prefix}${s.rate} (${prefix}${Number(s.change).toLocaleString()}원)</div>
-                            </div>
-                        </div>`;
-                });
-                wrapper.appendChild(pageDiv);
-
-                const dot = document.createElement('div');
-                dot.className = `dot ${i === 0 ? 'active' : ''}`;
-                dot.onclick = () => movePage(i);
-                dotsContainer.appendChild(dot);
-            }
-            currentPage = 0;
-            movePage(0);
-        }
-
-        function movePage(index) {
-            currentPage = index;
-            const wrapper = document.getElementById('slider-wrapper');
-            wrapper.style.transform = `translateX(-${index * 100}%)`;
-            
-            const dots = document.querySelectorAll('.dot');
-            dots.forEach((d, i) => d.classList.toggle('active', i === index));
-            
-            const pages = document.querySelectorAll('.page');
-            pages.forEach((p, i) => p.classList.toggle('active', i === index));
-        }
-
-        // 터치 스와이프 지원 (모바일용)
-        let startX = 0;
-        document.querySelector('.main-container').addEventListener('touchstart', e => startX = e.touches[0].clientX);
-        document.querySelector('.main-container').addEventListener('touchend', e => {
-            let endX = e.changedTouches[0].clientX;
-            if (startX - endX > 50) movePage(Math.min(currentPage + 1, 5));
-            if (endX - startX > 50) movePage(Math.max(currentPage - 1, 0));
-        });
-
-        loadData();
-        setInterval(loadData, 20000); // 20초마다 데이터 갱신 (애니메이션 없이 배경에서)
-    </script>
-</body>
-</html>
