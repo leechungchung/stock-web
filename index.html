@@ -8,17 +8,40 @@
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Pretendard', sans-serif; background-color: #f2f4f6; }
-        .stock-card { background: white; border-radius: 20px; transition: transform 0.2s; }
+        
+        /* 로고 스타일링 (임: 주황색, M: 작게) */
+        .logo-iam { color: #333d4b; font-weight: 700; font-size: 24px; }
+        .logo-im { color: #ff6b00; } /* 주황색 */
+        .logo-m { font-size: 16px; font-weight: 400; color: #8b95a1; margin-left: 2px; } /* 작게 */
+
+        /* 종목 카드 스타일 */
+        .stock-card { 
+            background: white; border-radius: 20px; 
+            transition: transform 0.2s, opacity 0.3s; 
+            opacity: 0; /* 처음에 숨김 */
+        }
         .stock-card:active { transform: scale(0.98); }
         .up { color: #f04452; }
         .down { color: #3182f6; }
+
+        /* '따다닥' 애니메이션 정의 */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-card { animation: fadeInDown 0.4s ease-out forwards; }
     </style>
 </head>
 <body class="p-4">
     <div class="max-w-md mx-auto">
-        <header class="mb-6 mt-4">
-            <h1 class="text-2xl font-bold text-gray-900">실시간 인기 종목</h1>
-            <p class="text-sm text-gray-500" id="update-time">데이터를 불러오는 중...</p>
+        <header class="mb-6 mt-4 flex items-center justify-between">
+            <div>
+                <span class="logo-iam">아<span class="logo-im">임</span>차트</span><span class="logo-m">M</span>
+            </div>
+            <div class="text-right">
+                <p class="text-xs text-gray-500" id="update-time">불러오는 중...</p>
+                <p class="text-xs text-blue-500 font-semibold">20초마다 자동 갱신</p>
+            </div>
         </header>
 
         <div id="stock-list" class="space-y-3">
@@ -26,25 +49,32 @@
     </div>
 
     <script>
-        // ⚠️ 주의: 여기에 본인의 구글 앱스 스크립트 웹 앱 URL을 붙여넣으세요!
-        const API_URL = "https://script.google.com/macros/s/AKfycbztf1UcjdC5kr6teY1xzbT2tOrXV82OEkGZV15tjBwpKR3qFvfcUJvZPiVtTDx8qGmBDQ/exec";
+        // ⚠️ 중요: 사용자님의 구글 앱스 스크립트 배포 URL로 교체하세요!
+        const API_URL = "https://script.google.com/macros/s/AKfycbzzS4v_4vHw4p_zI9V3pQ0z0Z_W4p_H0_V_R0_V_R/exec"; 
 
         async function fetchStocks() {
             try {
+                // 데이터 로딩 중 표시
+                document.getElementById('update-time').innerText = "갱신 중...";
+                
                 const response = await fetch(API_URL);
                 const data = await response.json();
                 
                 const list = document.getElementById('stock-list');
-                const time = document.getElementById('update-time');
-                list.innerHTML = '';
+                list.innerHTML = ''; // 기존 리스트 초기화
                 
-                data.forEach(stock => {
+                // 데이터 반복 처리
+                data.forEach((stock, index) => {
                     const isUp = stock.status === "상승";
                     const colorClass = isUp ? 'up' : (stock.status === "하락" ? 'down' : 'text-gray-500');
                     const prefix = isUp ? '+' : '';
+                    
+                    // F열 등락액 가격 데이터 처리
+                    const formattedChange = Number(stock.change).toLocaleString();
 
-                    list.innerHTML += `
-                        <div class="stock-card p-5 flex items-center justify-between shadow-sm">
+                    // 카드 HTML 생성
+                    const cardHtml = `
+                        <div class="stock-card p-5 flex items-center justify-between shadow-sm" style="animation-delay: ${index * 0.1}s;">
                             <div class="flex items-center space-x-4">
                                 <span class="text-lg font-bold text-gray-400 w-6">${stock.rank}</span>
                                 <div>
@@ -54,20 +84,34 @@
                             </div>
                             <div class="text-right">
                                 <p class="font-bold text-gray-900">${Number(stock.price).toLocaleString()}원</p>
-                                <p class="text-sm font-semibold ${colorClass}">${prefix}${stock.rate}</p>
+                                <p class="text-sm font-semibold ${colorClass}">
+                                    ${prefix}${stock.rate} (${prefix}${formattedChange}원)
+                                </p>
                             </div>
                         </div>
                     `;
+                    list.innerHTML += cardHtml;
                 });
-                
-                time.innerText = new Date().toLocaleTimeString() + " 기준 업데이트됨";
+
+                // 애니메이션 클래스 추가 (데이터 로딩 후)
+                const cards = document.querySelectorAll('.stock-card');
+                cards.forEach(card => card.classList.add('animate-card'));
+
+                // 업데이트 시간 기록
+                document.getElementById('update-time').innerText = new Date().toLocaleTimeString() + " 기준";
+
             } catch (error) {
                 console.error("데이터 로딩 실패:", error);
-                document.getElementById('update-time').innerText = "데이터를 불러오지 못했습니다.";
+                document.getElementById('update-time').innerText = "갱신 실패";
             }
         }
 
+        // 최초 실행
         fetchStocks();
+
+        // 20초마다 자동 실행 설정 (20,000ms)
+        setInterval(fetchStocks, 20000); 
+
     </script>
 </body>
 </html>
