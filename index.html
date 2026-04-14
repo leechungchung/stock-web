@@ -3,132 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>인기종목 TOP5</title>
+    <title>인기종목 TOP 30</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
-        
-        body { 
-            font-family: 'Pretendard', sans-serif; 
-            background-color: #f2f4f6; /* 회색 배경 고정 */
-            margin: 0; 
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
+        body { font-family: 'Pretendard', sans-serif; background-color: #f2f4f6; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
 
         .main-container {
-            width: 100%;
-            max-width: 480px;
-            background-color: white; /* 흰색 배경 영역 고정 */
-            border-radius: 24px;
-            padding: 24px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden; /* 영역 밖 내용 숨김 */
+            width: 100%; max-width: 480px; background-color: white; border-radius: 24px; padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; flex-direction: column;
+            position: relative; overflow: hidden; height: 620px; /* 높이 고정 */
         }
 
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            z-index: 10; /* 헤더가 리스트 위에 오도록 */
-        }
-
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; z-index: 30; background: white; position: relative; }
         .logo-iam { font-weight: 700; font-size: 24px; color: #333d4b; }
         .logo-im { color: #ff6b00; }
         .logo-m { font-size: 16px; font-weight: 400; color: #8b95a1; }
 
-        .refresh-btn { cursor: pointer; transition: transform 0.2s; }
-        .refresh-btn:active { transform: scale(0.9); }
+        /* 슬라이드 컨테이너 */
+        #slider-wrapper {
+            display: flex;
+            transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+            height: 100%;
+        }
 
-        /* 애니메이션 대상 영역: 텍스트가 있는 카드 리스트 */
-        #stock-list {
+        .page {
+            min-width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            transform: translateY(-100%); /* 처음에 위쪽으로 완전히 숨김 */
+            gap: 10px;
             opacity: 0;
-            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease;
+            transition: opacity 0.5s ease;
         }
+        .page.active { opacity: 1; }
 
-        /* 애니메이션 실행 클래스 (데이터 로드 후 추가됨) */
-        #stock-list.loaded {
-            transform: translateY(0); /* 제자리로 이동 */
-            opacity: 1;
+        .stock-card { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #f9fafb; }
+        .up { color: #f04452; } .down { color: #3182f6; }
+
+        /* 페이지 네비게이션 점 */
+        .dots { display: flex; justify-content: center; gap: 8px; margin-top: 10px; z-index: 30; }
+        .dot { width: 8px; height: 8px; background: #e5e8eb; border-radius: 50%; transition: background 0.3s; cursor: pointer; }
+        .dot.active { background: #3182f6; width: 20px; border-radius: 4px; }
+
+        /* 하단 고정 버튼 (움직임 없음) */
+        .fixed-bottom-area {
+            width: 100%; max-width: 480px; background: white; padding: 0 24px 24px 24px; border-radius: 0 0 24px 24px; z-index: 40;
         }
-
-        .stock-card { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            padding: 12px 4px; /* 간격 축소 */
-        }
-        
-        .up { color: #f04452; } 
-        .down { color: #3182f6; }
-        .symbol { width: 4px; height: 16px; border-radius: 2px; }
-
         .bottom-btn { 
-            background: #3182f6; 
-            color: white; 
-            width: 100%; 
-            padding: 16px; 
-            border-radius: 16px; 
-            font-weight: 600; 
-            text-align: center; 
-            margin-top: 24px; 
-            display: block; 
-            text-decoration: none; 
-            transition: background 0.2s;
+            background: #3182f6; color: white; width: 100%; padding: 16px; border-radius: 16px; 
+            font-weight: 600; text-align: center; display: block; text-decoration: none;
         }
-        .bottom-btn:hover { background: #1b64da; }
     </style>
 </head>
 <body>
     <div class="main-container">
         <header>
             <div><span class="logo-iam">아<span class="logo-im">임</span>차트</span><span class="logo-m">M</span></div>
-            <div class="refresh-btn" onclick="manualRefresh()">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b95a1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            <div class="text-gray-500 font-bold text-sm">TOP 30 (5개씩 보기)</div>
+            <div class="cursor-pointer" onclick="loadData()">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8b95a1" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
             </div>
         </header>
         
-        <div id="stock-list"></div>
+        <div id="slider-wrapper">
+            </div>
 
+        <div class="dots" id="dots-container"></div>
+    </div>
+
+    <div class="fixed-bottom-area">
         <a href="https://www.iamchart.co.kr" class="bottom-btn">아임차트M에서 예상 고저가 확인하기</a>
     </div>
 
     <script>
-        // ⚠️ 사용자님의 구글 앱스 스크립트 'exec' URL로 교체하세요!
-        const API_URL = "여기에_새로_배포한_exec_주소를_넣으세요"; 
-        const stockListArea = document.getElementById('stock-list');
+        // ⚠️ 배포 주소를 입력하세요
+        const API_URL = "https://script.google.com/macros/s/AKfycbztf1UcjdC5kr6teY1xzbT2tOrXV82OEkGZV15tjBwpKR3qFvfcUJvZPiVtTDx8qGmBDQ/exec"; 
+        let currentPage = 0;
 
-        async function load() {
+        async function loadData() {
             try {
-                // 애니메이션 리셋 (다시 올라가도록)
-                stockListArea.classList.remove('loaded');
-                
                 const res = await fetch(API_URL);
                 const data = await res.json();
+                renderSlider(data);
+            } catch (e) { console.error("데이터 로드 실패"); }
+        }
+
+        function renderSlider(data) {
+            const wrapper = document.getElementById('slider-wrapper');
+            const dotsContainer = document.getElementById('dots-container');
+            wrapper.innerHTML = '';
+            dotsContainer.innerHTML = '';
+
+            const itemsPerPage = 5;
+            const totalPages = Math.ceil(data.length / itemsPerPage);
+
+            for (let i = 0; i < totalPages; i++) {
+                const pageDiv = document.createElement('div');
+                pageDiv.className = `page ${i === 0 ? 'active' : ''}`;
                 
-                // 스크롤 탑으로 이동
-                stockListArea.innerHTML = '';
-                
-                data.forEach((s) => {
-                    const colorClass = s.status === "상승" ? 'up' : (s.status === "하락" ? 'down' : 'text-gray-500');
-                    const bgColorClass = s.status === "상승" ? 'bg-red-100' : (s.status === "하락" ? 'bg-blue-100' : 'bg-gray-100');
+                const pageData = data.slice(i * itemsPerPage, (i + 1) * itemsPerPage);
+                pageData.forEach(s => {
+                    const color = s.status === "상승" ? 'up' : (s.status === "하락" ? 'down' : 'text-gray-500');
                     const prefix = s.status === "상승" ? '+' : '';
-                    
-                    stockListArea.innerHTML += `
+                    pageDiv.innerHTML += `
                         <div class="stock-card">
                             <div class="flex items-center gap-3">
-                                <div class="symbol ${bgColorClass}"></div>
-                                <span class="font-bold text-gray-400 text-lg w-6 text-center">${s.rank}</span>
+                                <span class="font-bold text-gray-300 text-lg w-6">${s.rank}</span>
                                 <div>
                                     <div class="font-bold text-gray-800">${s.name}</div>
                                     <div class="text-xs text-gray-400">거래량 ${s.volume}</div>
@@ -136,33 +116,44 @@
                             </div>
                             <div class="text-right">
                                 <div class="font-bold text-gray-900">${Number(s.price).toLocaleString()}원</div>
-                                <div class="text-sm font-bold ${colorClass}">${prefix}${s.rate} (${prefix}${Number(s.change).toLocaleString()}원)</div>
+                                <div class="text-sm font-bold ${color}">${prefix}${s.rate} (${prefix}${Number(s.change).toLocaleString()}원)</div>
                             </div>
                         </div>`;
                 });
+                wrapper.appendChild(pageDiv);
 
-                // 데이터 로드 완료 후 애니메이션 실행 클래스 추가 (아래로 내려옴)
-                setTimeout(() => {
-                    stockListArea.classList.add('loaded');
-                }, 50);
-
-            } catch (e) { 
-                console.log("데이터 갱신 중 오류 발생"); 
-                stockListArea.innerHTML = '<div class="text-center text-gray-500 py-10">데이터를 불러오지 못했습니다.</div>';
-                stockListArea.classList.add('loaded'); // 에러 메시지라도 보여줌
+                const dot = document.createElement('div');
+                dot.className = `dot ${i === 0 ? 'active' : ''}`;
+                dot.onclick = () => movePage(i);
+                dotsContainer.appendChild(dot);
             }
+            currentPage = 0;
+            movePage(0);
         }
 
-        // 수동 새로고침 함수
-        function manualRefresh() {
-            load();
+        function movePage(index) {
+            currentPage = index;
+            const wrapper = document.getElementById('slider-wrapper');
+            wrapper.style.transform = `translateX(-${index * 100}%)`;
+            
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach((d, i) => d.classList.toggle('active', i === index));
+            
+            const pages = document.querySelectorAll('.page');
+            pages.forEach((p, i) => p.classList.toggle('active', i === index));
         }
 
-        // 최초 실행
-        load();
-        
-        // 20초 자동 갱신
-        setInterval(load, 20000); 
+        // 터치 스와이프 지원 (모바일용)
+        let startX = 0;
+        document.querySelector('.main-container').addEventListener('touchstart', e => startX = e.touches[0].clientX);
+        document.querySelector('.main-container').addEventListener('touchend', e => {
+            let endX = e.changedTouches[0].clientX;
+            if (startX - endX > 50) movePage(Math.min(currentPage + 1, 5));
+            if (endX - startX > 50) movePage(Math.max(currentPage - 1, 0));
+        });
+
+        loadData();
+        setInterval(loadData, 20000); // 20초마다 데이터 갱신 (애니메이션 없이 배경에서)
     </script>
 </body>
 </html>
