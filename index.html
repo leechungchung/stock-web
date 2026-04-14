@@ -12,15 +12,17 @@
         .main-container {
             width: 100%; max-width: 480px; background-color: white; border-radius: 24px; padding: 24px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; flex-direction: column;
-            position: relative; overflow: hidden; height: 620px; /* 높이 고정 */
+            position: relative; overflow: hidden; height: 620px;
         }
 
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; z-index: 30; background: white; position: relative; }
-        .logo-iam { font-weight: 700; font-size: 24px; color: #333d4b; }
-        .logo-im { color: #ff6b00; }
-        .logo-m { font-size: 16px; font-weight: 400; color: #8b95a1; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; z-index: 30; }
+        .list-title { font-weight: 700; font-size: 20px; color: #333d4b; }
 
-        /* 슬라이드 컨테이너 */
+        /* 배경은 고정되고 텍스트(슬라이더)만 움직이는 영역 */
+        .slider-viewport {
+            flex: 1; overflow: hidden; position: relative;
+        }
+
         #slider-wrapper {
             display: flex;
             transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
@@ -32,20 +34,15 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            opacity: 0;
-            transition: opacity 0.5s ease;
         }
-        .page.active { opacity: 1; }
 
         .stock-card { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #f9fafb; }
         .up { color: #f04452; } .down { color: #3182f6; }
 
-        /* 페이지 네비게이션 점 */
-        .dots { display: flex; justify-content: center; gap: 8px; margin-top: 10px; z-index: 30; }
+        .dots { display: flex; justify-content: center; gap: 8px; margin-top: 15px; margin-bottom: 5px; z-index: 30; }
         .dot { width: 8px; height: 8px; background: #e5e8eb; border-radius: 50%; transition: background 0.3s; cursor: pointer; }
         .dot.active { background: #3182f6; width: 20px; border-radius: 4px; }
 
-        /* 하단 고정 버튼 (움직임 없음) */
         .fixed-bottom-area {
             width: 100%; max-width: 480px; background: white; padding: 0 24px 24px 24px; border-radius: 0 0 24px 24px; z-index: 40;
         }
@@ -58,15 +55,16 @@
 <body>
     <div class="main-container">
         <header>
-            <div><span class="logo-iam">아<span class="logo-im">임</span>차트</span><span class="logo-m">M</span></div>
-            <div class="text-gray-500 font-bold text-sm">TOP 30 (5개씩 보기)</div>
+            <div class="list-title">인기종목 TOP 30</div>
             <div class="cursor-pointer" onclick="loadData()">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8b95a1" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
             </div>
         </header>
         
-        <div id="slider-wrapper">
-            <div class="w-full text-center py-40 text-gray-400">데이터를 불러오는 중...</div>
+        <div class="slider-viewport">
+            <div id="slider-wrapper">
+                <div class="w-full text-center py-40 text-gray-400">데이터를 불러오는 중...</div>
+            </div>
         </div>
 
         <div class="dots" id="dots-container"></div>
@@ -77,11 +75,91 @@
     </div>
 
     <script>
-        // 현재 사용 중이신 API 주소
         const API_URL = "https://script.google.com/macros/s/AKfycbztf1UcjdC5kr6teY1xzbT2tOrXV82OEkGZV15tjBwpKR3qFvfcUJvZPiVtTDx8qGmBDQ/exec"; 
         let currentPage = 0;
 
         async function loadData() {
             try {
-                // 구글 앱스 스크립트 호출 시 redirect 처리를 브라우저에 맡깁니다.
-                const res = await fetch(API_URL);
+                const response = await fetch(`${API_URL}?t=${new Date().getTime()}`);
+                const data = await response.json();
+                
+                if (data && data.length > 0) {
+                    renderSlider(data);
+                } else {
+                    throw new Error("No Data");
+                }
+            } catch (e) {
+                console.error("실패:", e);
+                document.getElementById('slider-wrapper').innerHTML = 
+                    `<div class="w-full text-center py-40 text-red-400 font-medium">연결 지연... 재시도 중</div>`;
+                setTimeout(loadData, 3000);
+            }
+        }
+
+        function renderSlider(data) {
+            const wrapper = document.getElementById('slider-wrapper');
+            const dotsContainer = document.getElementById('dots-container');
+            wrapper.innerHTML = '';
+            dotsContainer.innerHTML = '';
+
+            const itemsPerPage = 5;
+            const totalPages = Math.ceil(data.length / itemsPerPage);
+
+            for (let i = 0; i < totalPages; i++) {
+                const pageDiv = document.createElement('div');
+                pageDiv.className = 'page';
+                
+                const pageData = data.slice(i * itemsPerPage, (i + 1) * itemsPerPage);
+                pageData.forEach(s => {
+                    const color = s.status === "상승" ? 'up' : (s.status === "하락" ? 'down' : 'text-gray-500');
+                    const prefix = s.status === "상승" ? '+' : '';
+                    pageDiv.innerHTML += `
+                        <div class="stock-card">
+                            <div class="flex items-center gap-3">
+                                <span class="font-bold text-gray-300 text-lg w-6">${s.rank}</span>
+                                <div>
+                                    <div class="font-bold text-gray-800">${s.name}</div>
+                                    <div class="text-xs text-gray-400">거래량 ${s.volume}</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold text-gray-900">${Number(s.price).toLocaleString()}원</div>
+                                <div class="text-sm font-bold ${color}">${prefix}${s.rate} (${prefix}${Number(s.change).toLocaleString()}원)</div>
+                            </div>
+                        </div>`;
+                });
+                wrapper.appendChild(pageDiv);
+                
+                const dot = document.createElement('div');
+                dot.className = `dot ${i === currentPage ? 'active' : ''}`;
+                dot.onclick = () => movePage(i);
+                dotsContainer.appendChild(dot);
+            }
+            movePage(currentPage);
+        }
+
+        function movePage(index) {
+            const wrapper = document.getElementById('slider-wrapper');
+            const dots = document.querySelectorAll('.dot');
+            if (!dots.length) return;
+            
+            currentPage = index;
+            wrapper.style.transform = `translateX(-${index * 100}%)`;
+            dots.forEach((d, i) => d.classList.toggle('active', i === index));
+        }
+
+        let startX = 0;
+        const container = document.querySelector('.slider-viewport');
+        container.addEventListener('touchstart', e => startX = e.touches[0].clientX);
+        container.addEventListener('touchend', e => {
+            let endX = e.changedTouches[0].clientX;
+            const totalPages = document.querySelectorAll('.page').length;
+            if (startX - endX > 50) movePage(Math.min(currentPage + 1, totalPages - 1));
+            if (endX - startX > 50) movePage(Math.max(currentPage - 1, 0));
+        });
+
+        loadData();
+        setInterval(loadData, 60000); // 1분마다 자동 갱신
+    </script>
+</body>
+</html>
