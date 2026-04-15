@@ -1,95 +1,227 @@
-// ... (상단 CSS 및 HTML 동일)
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ImChart</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        :root { --up: #f04452; --down: #3182f6; --bg: #ffffff; --gray-bg: #f2f4f6; --text-main: #191f28; --text-sub: #8b95a1; --im-orange: #ff8c00; }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--gray-bg); margin: 0; padding: 0; display: flex; justify-content: center; color: var(--text-main); letter-spacing: -0.3px; -webkit-font-smoothing: antialiased; }
+        .main-wrapper { width: 100%; max-width: 500px; min-height: 100vh; background-color: var(--bg); display: flex; flex-direction: column; }
+        .header-nav { display: flex; justify-content: space-between; align-items: center; padding: 0 20px; background: white; border-bottom: 1px solid #f2f4f6; position: sticky; top: 0; z-index: 1000; height: 60px; }
+        .tab-nav { display: flex; gap: 20px; height: 100%; }
+        .tab-item { font-size: 16px; font-weight: 600; cursor: pointer; color: #adb5bd; display: flex; align-items: center; position: relative; }
+        .tab-item.active { color: var(--text-main); }
+        .tab-item.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--text-main); border-radius: 2px; }
+        .refresh-btn { background: #f2f4f6; border: none; color: #4e5968; cursor: pointer; font-size: 16px; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .refresh-btn.rotating i { animation: rotate 0.6s ease-in-out; }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .view-container { display: none; padding: 10px 0; transition: opacity 0.2s; }
+        .view-container.active { display: block; }
+        .refreshing { opacity: 0.4; }
+        .item { display: flex; justify-content: space-between; align-items: center; padding: 22px 20px; border-bottom: 1px solid #f9fafb; }
+        .info-area { display: flex; align-items: center; gap: 14px; }
+        .rank-txt { font-size: 15px; font-weight: 600; color: var(--text-sub); width: 18px; text-align: center; }
+        .name { font-size: 16px; font-weight: 500; color: var(--text-main); }
+        .sub-text { font-size: 13px; color: var(--text-sub); margin-top: 4px; display: block; }
+        .right-area { text-align: right; display: flex; flex-direction: column; gap: 4px; }
+        .price-txt { font-size: 15px; font-weight: 600; color: var(--text-main); }
+        .rate-big { font-size: 18px; font-weight: 600; }
+        .status-txt { font-size: 13px; font-weight: 500; display: flex; gap: 6px; justify-content: flex-end; }
+        .상승 { color: var(--up); } .하락 { color: var(--down); } .보합 { color: var(--text-sub); }
+        .control-section { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 30px 0; }
+        .swiper-pagination-custom { display: flex; gap: 8px; justify-content: center; height: 10px; }
+        .dot { width: 7px; height: 7px; background: #e5e8eb; border-radius: 50%; cursor: pointer; transition: 0.3s; }
+        .dot.active { background: #adb5bd; width: 18px; border-radius: 4px; }
+        .nav-btns { display: flex; gap: 10px; }
+        .nav-btn { background: #f2f4f6; border: none; padding: 10px 28px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: #4e5968; }
+        .footer-link { padding: 0 20px 40px; }
+        .btn-link { display: block; background: #191f28; color: white; text-decoration: none; padding: 18px; border-radius: 16px; text-align: center; font-size: 16px; font-weight: 500; }
+        .logo-im { color: var(--im-orange); }
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <div class="header-nav">
+            <div class="tab-nav">
+                <div class="tab-item active" data-target="stock-view">인기종목</div>
+                <div class="tab-item" data-target="sector-view">업종시세</div>
+            </div>
+            <button class="refresh-btn" id="manual-refresh"><i class="fa-solid fa-arrows-rotate"></i></button>
+        </div>
 
-<script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxQTP2WpINbKU3cPu2j38V0s1-B24-PsJhU5jfvMw0onDjDa_KCEFu19C5UM-ucA85UAg/exec";
-    let stockSwiper, sectorSwiper;
+        <div id="stock-view" class="view-container active">
+            <div class="swiper" id="stock-swiper">
+                <div class="swiper-wrapper" id="stock-wrapper"></div>
+                <div class="control-section">
+                    <div class="swiper-pagination-custom" id="stock-dots"></div>
+                    <div class="nav-btns">
+                        <button class="nav-btn" id="stock-prev">이전</button>
+                        <button class="nav-btn" id="stock-next">다음</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    // 현재 페이지 위치를 기억하기 위한 변수
-    let currentStockIndex = 0;
-    let currentSectorIndex = 0;
+        <div id="sector-view" class="view-container">
+            <div class="swiper" id="sector-swiper">
+                <div class="swiper-wrapper" id="sector-wrapper"></div>
+                <div class="control-section">
+                    <div class="swiper-pagination-custom" id="sector-dots"></div>
+                    <div class="nav-btns">
+                        <button class="nav-btn" id="sector-prev">이전</button>
+                        <button class="nav-btn" id="sector-next">다음</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    async function fetchData() {
-        const btn = document.getElementById('manual-refresh');
-        const containers = document.querySelectorAll('.view-container');
-        
-        // 1. 새로고침 전 현재 위치 저장
-        if (stockSwiper) currentStockIndex = stockSwiper.realIndex;
-        if (sectorSwiper) currentSectorIndex = sectorSwiper.realIndex;
+        <div class="footer-link">
+            <a href="https://www.iamchart.co.kr" class="btn-link">아<span class="logo-im">임</span>차트M 에서 추세확인</a>
+        </div>
+    </div>
 
-        btn.classList.add('rotating');
-        containers.forEach(c => c.classList.add('refreshing'));
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbxQTP2WpINbKU3cPu2j38V0s1-B24-PsJhU5jfvMw0onDjDa_KCEFu19C5UM-ucA85UAg/exec";
+        let stockSwiper, sectorSwiper;
+        let currentStockIndex = 0;
+        let currentSectorIndex = 0;
 
-        try {
-            const [resStock, resSector] = await Promise.all([
-                fetch(`${GAS_URL}?type=stock`), fetch(`${GAS_URL}?type=sector`)
-            ]);
-            const sData = await resStock.json();
-            const vData = await resSector.json();
+        async function fetchData() {
+            const btn = document.getElementById('manual-refresh');
+            const containers = document.querySelectorAll('.view-container');
             
-            renderStock(sData.data);
-            renderSector(vData.data, vData.stats_list);
+            if (stockSwiper) currentStockIndex = stockSwiper.realIndex;
+            if (sectorSwiper) currentSectorIndex = sectorSwiper.realIndex;
 
-            // 2. 데이터 렌더링 후 기존 위치로 복구 (애니메이션 없이 즉시 이동)
-            if (stockSwiper) stockSwiper.slideToLoop(currentStockIndex, 0);
-            if (sectorSwiper) sectorSwiper.slideToLoop(currentSectorIndex, 0);
+            btn.classList.add('rotating');
+            containers.forEach(c => c.classList.add('refreshing'));
 
-        } finally {
-            setTimeout(() => {
-                btn.classList.remove('rotating');
-                containers.forEach(c => c.classList.remove('refreshing'));
-            }, 500);
-        }
-    }
+            try {
+                const [resStock, resSector] = await Promise.all([
+                    fetch(`${GAS_URL}?type=stock`), fetch(`${GAS_URL}?type=sector`)
+                ]);
+                const sData = await resStock.json();
+                const vData = await resSector.json();
+                
+                renderStock(sData.data);
+                renderSector(vData.data, vData.stats_list);
 
-    // ... (renderStock, renderSector, createDots, updateDots 함수는 동일)
-
-    async function init() {
-        await fetchData();
-
-        stockSwiper = new Swiper('#stock-swiper', {
-            loop: true,
-            navigation: { nextEl: '#stock-next', prevEl: '#stock-prev' },
-            on: {
-                init: function() { createDots(this, 'stock-dots', 6); },
-                slideChange: function() { 
-                    updateDots(this, 'stock-dots');
-                    // 사용자가 직접 넘길 때도 현재 인덱스 업데이트
-                    currentStockIndex = this.realIndex;
-                }
+                if (stockSwiper) stockSwiper.slideToLoop(currentStockIndex, 0);
+                if (sectorSwiper) sectorSwiper.slideToLoop(currentSectorIndex, 0);
+            } finally {
+                setTimeout(() => {
+                    btn.classList.remove('rotating');
+                    containers.forEach(c => c.classList.remove('refreshing'));
+                }, 500);
             }
-        });
-
-        sectorSwiper = new Swiper('#sector-swiper', {
-            loop: true,
-            navigation: { nextEl: '#sector-next', prevEl: '#sector-prev' },
-            on: {
-                init: function() { createDots(this, 'sector-dots', 2); },
-                slideChange: function() { 
-                    updateDots(this, 'sector-dots');
-                    currentSectorIndex = this.realIndex;
-                }
-            }
-        });
-
-        // 탭 로직 및 URL 파라미터 체크 (기존과 동일)
-        const tabs = document.querySelectorAll('.tab-item');
-        tabs.forEach(tab => {
-            tab.onclick = () => {
-                document.querySelectorAll('.tab-item, .view-container').forEach(el => el.classList.remove('active'));
-                tab.classList.add('active');
-                document.getElementById(tab.dataset.target).classList.add('active');
-                if(tab.dataset.target === 'stock-view') stockSwiper.update();
-                else sectorSwiper.update();
-            };
-        });
-
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('tab') === 'sector') {
-            const sectorTab = document.querySelector('.tab-item[data-target="sector-view"]');
-            if (sectorTab) sectorTab.click();
         }
-    }
 
-    document.getElementById('manual-refresh').onclick = fetchData;
-    init();
-</script>
+        function renderStock(data) {
+            const wrapper = document.getElementById('stock-wrapper');
+            wrapper.innerHTML = '';
+            for (let i = 0; i < 30; i += 5) {
+                let html = '<div class="swiper-slide">';
+                data.slice(i, i + 5).forEach(item => {
+                    html += `<div class="item">
+                        <div class="info-area"><span class="rank-txt">${item.rank}</span><span class="name">${item.name}</span></div>
+                        <div class="right-area">
+                            <span class="price-txt">${item.price}원</span>
+                            <div class="status-txt ${item.status}"><span>${item.change}원</span><span>${item.rate}</span></div>
+                        </div>
+                    </div>`;
+                });
+                wrapper.innerHTML += html + '</div>';
+            }
+            if(stockSwiper) stockSwiper.update();
+        }
+
+        function renderSector(data, stats) {
+            const wrapper = document.getElementById('sector-wrapper');
+            wrapper.innerHTML = '';
+            const groups = [
+                { title: "📈 등락 상위 업종", d: data.slice(0, 5), s: stats.slice(0, 5) },
+                { title: "📉 등락 하위 업종", d: data.slice(5, 10), s: stats.slice(5, 10) }
+            ];
+            groups.forEach(g => {
+                let html = `<div class="swiper-slide"><h4 style="margin: 0 20px 10px; font-size:14px; color:var(--text-sub); font-weight:500;">${g.title}</h4>`;
+                g.d.forEach((item, idx) => {
+                    html += `<div class="item">
+                        <div><span class="name">${item.name}</span><span class="sub-text">${g.s[idx] || ""}</span></div>
+                        <div class="right-area"><span class="rate-big ${item.status}">${item.rate}</span></div>
+                    </div>`;
+                });
+                wrapper.innerHTML += html + '</div>';
+            });
+            if(sectorSwiper) sectorSwiper.update();
+        }
+
+        function updateDots(swiper, containerId) {
+            const dots = document.querySelectorAll(`#${containerId} .dot`);
+            dots.forEach((dot, idx) => dot.classList.toggle('active', idx === swiper.realIndex));
+        }
+
+        function createDots(swiper, containerId, total) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            for (let i = 0; i < total; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'dot' + (i === 0 ? ' active' : '');
+                dot.onclick = () => swiper.slideToLoop(i);
+                container.appendChild(dot);
+            }
+        }
+
+        async function init() {
+            await fetchData();
+
+            stockSwiper = new Swiper('#stock-swiper', {
+                loop: true,
+                navigation: { nextEl: '#stock-next', prevEl: '#stock-prev' },
+                on: {
+                    init: function() { createDots(this, 'stock-dots', 6); },
+                    slideChange: function() { 
+                        updateDots(this, 'stock-dots');
+                        currentStockIndex = this.realIndex;
+                    }
+                }
+            });
+
+            sectorSwiper = new Swiper('#sector-swiper', {
+                loop: true,
+                navigation: { nextEl: '#sector-next', prevEl: '#sector-prev' },
+                on: {
+                    init: function() { createDots(this, 'sector-dots', 2); },
+                    slideChange: function() { 
+                        updateDots(this, 'sector-dots');
+                        currentSectorIndex = this.realIndex;
+                    }
+                }
+            });
+
+            document.querySelectorAll('.tab-item').forEach(tab => {
+                tab.onclick = () => {
+                    document.querySelectorAll('.tab-item, .view-container').forEach(el => el.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.getElementById(tab.dataset.target).classList.add('active');
+                    if(tab.dataset.target === 'stock-view') stockSwiper.update();
+                    else sectorSwiper.update();
+                };
+            });
+
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('tab') === 'sector') {
+                const sectorTab = document.querySelector('.tab-item[data-target="sector-view"]');
+                if (sectorTab) sectorTab.click();
+            }
+        }
+
+        document.getElementById('manual-refresh').onclick = fetchData;
+        init();
+    </script>
+</body>
+</html>
