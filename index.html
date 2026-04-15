@@ -203,19 +203,28 @@
         }
 
         async function init() {
-            await fetchData();
-            stockSwiper = setupSwiper('#stock-swiper', 'stock-dots', '#stock-prev', '#stock-next', 6);
-            sectorSwiper = setupSwiper('#sector-swiper', 'sector-dots', '#sector-prev', '#sector-next', 2);
-        }
+    // 1. 데이터를 먼저 가져옵니다.
+    await fetchData();
 
-        document.querySelectorAll('.tab-item').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.tab-item, .view-container').forEach(el => el.classList.remove('active'));
-                tab.classList.add('active');
-                document.getElementById(tab.dataset.target).classList.add('active');
-                stockSwiper.update(); sectorSwiper.update();
-            });
-        });
+    // 2. 스와이퍼(Swiper)들을 초기화합니다.
+    stockSwiper = setupSwiper('#stock-swiper', 'stock-dots', '#stock-prev', '#stock-next', 6);
+    sectorSwiper = setupSwiper('#sector-swiper', 'sector-dots', '#sector-prev', '#sector-next', 2);
+
+    // 3. [핵심] URL 주소에 ?tab=sector 가 있는지 확인합니다.
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+
+    if (tabParam === 'sector') {
+        // '업종시세' 탭 버튼을 찾아서 강제로 클릭 이벤트를 발생시킵니다.
+        const sectorTab = document.querySelector('.tab-item[data-target="sector-view"]');
+        if (sectorTab) {
+            sectorTab.click(); 
+        }
+    }
+}
+
+// 페이지가 로드되면 실행
+init();
 
         document.getElementById('manual-refresh').addEventListener('click', fetchData);
         init();
