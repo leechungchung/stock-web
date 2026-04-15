@@ -8,54 +8,36 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-        
-        :root { 
-            --up: #f04452; --down: #3182f6; --bg: #ffffff; 
-            --gray-bg: #f2f4f6; --text-main: #191f28; --text-sub: #8b95a1; --im-orange: #ff8c00;
-        }
-
+        :root { --up: #f04452; --down: #3182f6; --bg: #ffffff; --gray-bg: #f2f4f6; --text-main: #191f28; --text-sub: #8b95a1; --im-orange: #ff8c00; }
         body { font-family: 'Pretendard', sans-serif; background-color: var(--gray-bg); margin: 0; padding: 0; display: flex; justify-content: center; color: var(--text-main); letter-spacing: -0.3px; -webkit-font-smoothing: antialiased; }
-        
         .main-wrapper { width: 100%; max-width: 500px; min-height: 100vh; background-color: var(--bg); display: flex; flex-direction: column; }
-        
         .header-nav { display: flex; justify-content: space-between; align-items: center; padding: 0 20px; background: white; border-bottom: 1px solid #f2f4f6; position: sticky; top: 0; z-index: 1000; height: 60px; }
         .tab-nav { display: flex; gap: 20px; height: 100%; }
         .tab-item { font-size: 16px; font-weight: 600; cursor: pointer; color: #adb5bd; display: flex; align-items: center; position: relative; }
         .tab-item.active { color: var(--text-main); }
         .tab-item.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--text-main); border-radius: 2px; }
-
         .refresh-btn { background: #f2f4f6; border: none; color: #4e5968; cursor: pointer; font-size: 16px; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-        .refresh-btn i { font-size: 18px; }
         .refresh-btn.rotating i { animation: rotate 0.6s ease-in-out; }
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
         .view-container { display: none; padding: 10px 0; transition: opacity 0.2s; }
         .view-container.active { display: block; }
         .refreshing { opacity: 0.4; }
-
         .item { display: flex; justify-content: space-between; align-items: center; padding: 22px 20px; border-bottom: 1px solid #f9fafb; }
         .info-area { display: flex; align-items: center; gap: 14px; }
         .rank-txt { font-size: 15px; font-weight: 600; color: var(--text-sub); width: 18px; text-align: center; }
         .name { font-size: 16px; font-weight: 500; color: var(--text-main); }
-        
         .sub-text { font-size: 13px; color: var(--text-sub); margin-top: 4px; display: block; }
-
         .right-area { text-align: right; display: flex; flex-direction: column; gap: 4px; }
         .price-txt { font-size: 15px; font-weight: 600; color: var(--text-main); }
         .rate-big { font-size: 18px; font-weight: 600; }
         .status-txt { font-size: 13px; font-weight: 500; display: flex; gap: 6px; justify-content: flex-end; }
-        
-        .상승 { color: var(--up); }
-        .하락 { color: var(--down); }
-        .보합 { color: var(--text-sub); }
-
+        .상승 { color: var(--up); } .하락 { color: var(--down); } .보합 { color: var(--text-sub); }
         .control-section { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 30px 0; }
-        .swiper-pagination-custom { display: flex; gap: 8px; justify-content: center; }
+        .swiper-pagination-custom { display: flex; gap: 8px; justify-content: center; height: 10px; }
         .dot { width: 7px; height: 7px; background: #e5e8eb; border-radius: 50%; cursor: pointer; transition: 0.3s; }
         .dot.active { background: #adb5bd; width: 18px; border-radius: 4px; }
         .nav-btns { display: flex; gap: 10px; }
         .nav-btn { background: #f2f4f6; border: none; padding: 10px 28px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: #4e5968; }
-
         .footer-link { padding: 0 20px 40px; }
         .btn-link { display: block; background: #191f28; color: white; text-decoration: none; padding: 18px; border-radius: 16px; text-align: center; font-size: 16px; font-weight: 500; }
         .logo-im { color: var(--im-orange); }
@@ -98,9 +80,7 @@
         </div>
 
         <div class="footer-link">
-            <a href="https://www.iamchart.co.kr" class="btn-link">
-                아<span class="logo-im">임</span>차트M 에서 추세확인
-            </a>
+            <a href="https://www.iamchart.co.kr" class="btn-link">아<span class="logo-im">임</span>차트M 에서 추세확인</a>
         </div>
     </div>
 
@@ -109,6 +89,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbxQTP2WpINbKU3cPu2j38V0s1-B24-PsJhU5jfvMw0onDjDa_KCEFu19C5UM-ucA85UAg/exec";
         let stockSwiper, sectorSwiper;
 
+        // 1. 데이터 로드 및 렌더링
         async function fetchData() {
             const btn = document.getElementById('manual-refresh');
             const containers = document.querySelectorAll('.view-container');
@@ -137,21 +118,17 @@
             for (let i = 0; i < 30; i += 5) {
                 let html = '<div class="swiper-slide">';
                 data.slice(i, i + 5).forEach(item => {
-                    // 등락 수치 뒤에 '원' 단위 추가
                     html += `<div class="item">
                         <div class="info-area"><span class="rank-txt">${item.rank}</span><span class="name">${item.name}</span></div>
                         <div class="right-area">
                             <span class="price-txt">${item.price}원</span>
-                            <div class="status-txt ${item.status}">
-                                <span>${item.change}원</span>
-                                <span>${item.rate}</span>
-                            </div>
+                            <div class="status-txt ${item.status}"><span>${item.change}원</span><span>${item.rate}</span></div>
                         </div>
                     </div>`;
                 });
                 wrapper.innerHTML += html + '</div>';
             }
-            if(stockSwiper) stockSwiper.update();
+            if(stockSwiper) { stockSwiper.update(); }
         }
 
         function renderSector(data, stats) {
@@ -165,31 +142,28 @@
                 let html = `<div class="swiper-slide"><h4 style="margin: 0 20px 10px; font-size:14px; color:var(--text-sub); font-weight:500;">${g.title}</h4>`;
                 g.d.forEach((item, idx) => {
                     html += `<div class="item">
-                        <div>
-                            <span class="name">${item.name}</span>
-                            <span class="sub-text">${g.s[idx] || ""}</span>
-                        </div>
-                        <div class="right-area">
-                            <span class="rate-big ${item.status}">${item.rate}</span>
-                        </div>
+                        <div><span class="name">${item.name}</span><span class="sub-text">${g.s[idx] || ""}</span></div>
+                        <div class="right-area"><span class="rate-big ${item.status}">${item.rate}</span></div>
                     </div>`;
                 });
                 wrapper.innerHTML += html + '</div>';
             });
-            if(sectorSwiper) sectorSwiper.update();
+            if(sectorSwiper) { sectorSwiper.update(); }
         }
 
-        function setupSwiper(id, dotId, prevId, nextId, total) {
-            return new Swiper(id, {
-                loop: true, navigation: { nextEl: nextId, prevEl: prevId },
-                on: { init: function() { createDots(dotId, this, total); }, slideChange: function() { updateDots(dotId, this); } }
+        // 2. 도트 업데이트 함수 (loop 완벽 대응)
+        function updateDots(swiper, containerId) {
+            const dots = document.querySelectorAll(`#${containerId} .dot`);
+            const activeIndex = swiper.realIndex; 
+            dots.forEach((dot, idx) => {
+                dot.classList.toggle('active', idx === activeIndex);
             });
         }
 
-        function createDots(containerId, swiper, total) {
+        function createDots(swiper, containerId, total) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
-            for(let i=0; i<total; i++) {
+            for (let i = 0; i < total; i++) {
                 const dot = document.createElement('div');
                 dot.className = 'dot' + (i === 0 ? ' active' : '');
                 dot.onclick = () => swiper.slideToLoop(i);
@@ -197,36 +171,51 @@
             }
         }
 
-        function updateDots(containerId, swiper) {
-            const dots = document.querySelectorAll(`#${containerId} .dot`);
-            dots.forEach((dot, idx) => dot.classList.toggle('active', idx === swiper.realIndex));
-        }
-
+        // 3. 초기화 로직 (URL 파라미터 감지 포함)
         async function init() {
-    // 1. 데이터를 먼저 가져옵니다.
-    await fetchData();
+            await fetchData();
 
-    // 2. 스와이퍼(Swiper)들을 초기화합니다.
-    stockSwiper = setupSwiper('#stock-swiper', 'stock-dots', '#stock-prev', '#stock-next', 6);
-    sectorSwiper = setupSwiper('#sector-swiper', 'sector-dots', '#sector-prev', '#sector-next', 2);
+            stockSwiper = new Swiper('#stock-swiper', {
+                loop: true,
+                navigation: { nextEl: '#stock-next', prevEl: '#stock-prev' },
+                on: {
+                    init: function() { createDots(this, 'stock-dots', 6); },
+                    slideChange: function() { updateDots(this, 'stock-dots'); }
+                }
+            });
 
-    // 3. [핵심] URL 주소에 ?tab=sector 가 있는지 확인합니다.
-    const urlParams = new URLSearchParams(window.location.search);
-    const tabParam = urlParams.get('tab');
+            sectorSwiper = new Swiper('#sector-swiper', {
+                loop: true,
+                navigation: { nextEl: '#sector-next', prevEl: '#sector-prev' },
+                on: {
+                    init: function() { createDots(this, 'sector-dots', 2); },
+                    slideChange: function() { updateDots(this, 'sector-dots'); }
+                }
+            });
 
-    if (tabParam === 'sector') {
-        // '업종시세' 탭 버튼을 찾아서 강제로 클릭 이벤트를 발생시킵니다.
-        const sectorTab = document.querySelector('.tab-item[data-target="sector-view"]');
-        if (sectorTab) {
-            sectorTab.click(); 
+            // 탭 로직 정의
+            const tabs = document.querySelectorAll('.tab-item');
+            tabs.forEach(tab => {
+                tab.onclick = () => {
+                    document.querySelectorAll('.tab-item, .view-container').forEach(el => el.classList.remove('active'));
+                    tab.classList.add('active');
+                    const target = document.getElementById(tab.dataset.target);
+                    target.classList.add('active');
+                    // 탭 전환 시 스와이퍼 갱신
+                    if(tab.dataset.target === 'stock-view') stockSwiper.update();
+                    else sectorSwiper.update();
+                };
+            });
+
+            // URL 파라미터 체크 및 강제 탭 전환
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('tab') === 'sector') {
+                const sectorTab = document.querySelector('.tab-item[data-target="sector-view"]');
+                if (sectorTab) sectorTab.click();
+            }
         }
-    }
-}
 
-// 페이지가 로드되면 실행
-init();
-
-        document.getElementById('manual-refresh').addEventListener('click', fetchData);
+        document.getElementById('manual-refresh').onclick = fetchData;
         init();
     </script>
 </body>
