@@ -8,86 +8,99 @@
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
         body { font-family: 'Pretendard', sans-serif; background-color: #f2f4f6; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        .main-container { width: 100%; max-width: 420px; background-color: white; border-radius: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; min-height: 600px; }
+        .main-container { width: 100%; max-width: 420px; background-color: white; border-radius: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; height: 680px; position: relative; }
         .tab-btn { flex: 1; padding: 12px; text-align: center; font-size: 14px; font-weight: 600; cursor: pointer; color: #8b95a1; transition: 0.2s; border-radius: 12px; }
         .tab-btn.active { color: #3182f6; background-color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .stock-card { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-bottom: 1px solid #f9fafb; }
-        /* 색상 클래스 강제 적용 */
-        .text-up { color: #f04452 !important; }   /* 빨간색 */
-        .text-down { color: #3182f6 !important; } /* 파란색 */
-        .section-title { padding: 12px 24px; background: #f9fafb; font-size: 12px; font-weight: 700; color: #8b95a1; }
-        .bottom-btn { background: #4e81f1; color: white; width: calc(100% - 40px); margin: 20px; padding: 18px; border-radius: 18px; font-weight: 600; text-align: center; display: block; text-decoration: none; }
+        .stock-card { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-bottom: 1px solid #f9fafb; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .text-up { color: #f04452 !important; }
+        .text-down { color: #3182f6 !important; }
+        .section-title { padding: 12px 24px; background: #f9fafb; font-size: 13px; font-weight: 700; color: #4e5968; display: flex; align-items: center; }
+        .nav-footer { padding: 15px 24px; display: flex; justify-content: space-between; align-items: center; background: white; border-top: 1px solid #f2f4f6; }
+        .nav-btn { padding: 8px 16px; background: #3182f6; color: white; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .nav-btn:disabled { background: #e5e8eb; color: #b0b8c1; cursor: not-allowed; }
+        .page-indicator { font-size: 13px; color: #8b95a1; font-weight: 500; }
+        .bottom-link { background: #4e81f1; color: white; width: calc(100% - 40px); margin: 0 20px 20px 20px; padding: 18px; border-radius: 18px; font-weight: 600; text-align: center; display: block; text-decoration: none; position: absolute; bottom: 0; }
     </style>
 </head>
 <body>
     <h2 class="text-xl font-bold mb-6">📊 실시간 데이터 센터</h2>
     <div class="main-container">
         <div class="flex bg-gray-100 p-1.5 m-5 rounded-2xl">
-            <div id="tab-stock" class="tab-btn active" onclick="changeTab('stock')">인기종목</div>
-            <div id="tab-sector" class="tab-btn" onclick="changeTab('sector')">업종별 시세</div>
+            <div id="tab-stock" class="tab-btn active" onclick="setTab('stock')">인기종목</div>
+            <div id="tab-sector" class="tab-btn" onclick="setTab('sector')">업종별 시세</div>
         </div>
-        <div id="content-area" class="flex-1 overflow-y-auto">
-            <div class="p-10 text-center text-gray-400">데이터 로딩 중...</div>
+        
+        <div id="content-area" class="flex-1 overflow-hidden">
+            </div>
+
+        <div class="nav-footer">
+            <button id="prev-btn" class="nav-btn" onclick="movePage(-1)">이전</button>
+            <span id="page-info" class="page-indicator">1 / 1</span>
+            <button id="next-btn" class="nav-btn" onclick="movePage(1)">다음</button>
         </div>
-        <a href="https://www.iamchart.co.kr" class="bottom-btn">아임차트M 예상 고저가 확인하기</a>
+        
+        <div style="height: 80px;"></div> <a href="https://www.iamchart.co.kr" class="bottom-link">아임차트M 예상 고저가 확인하기</a>
     </div>
 
     <script>
-        // 사용자님의 앱스 스크립트 배포 URL을 여기에 넣으세요
-        const API_URL = "https://script.google.com/macros/s/AKfycbztf1UcjdC5kr6teY1xzbT2tOrXV82OEkGZV15tjBwpKR3qFvfcUJvZPiVtTDx8qGmBDQ/exec"; 
-        
-        // 1. 페이지 로드 시 파라미터 체크 로직
+        const API_URL = "https://script.google.com/macros/s/AKfycbztf1UcjdC5kr6teY1xzbT2tOrXV82OEkGZV15tjBwpKR3qFvfcUJvZPiVtTDx8qGmBDQ/exec";
+        let currentData = [];
+        let currentTab = 'stock';
+        let currentPage = 1;
+        const itemsPerPage = 5;
+
         window.onload = function() {
             const params = new URLSearchParams(window.location.search);
-            const tab = params.get('tab');
-            if (tab === 'sector') {
-                changeTab('sector');
+            if (params.get('tab') === 'sector') {
+                setTab('sector');
             } else {
-                loadData('stock');
+                fetchData('stock');
             }
         };
 
-        async function loadData(type) {
+        function setTab(type) {
+            currentTab = type;
+            currentPage = 1;
+            document.getElementById('tab-stock').classList.toggle('active', type === 'stock');
+            document.getElementById('tab-sector').classList.toggle('active', type === 'sector');
+            fetchData(type);
+        }
+
+        async function fetchData(type) {
             const container = document.getElementById('content-area');
-            container.innerHTML = '<div class="p-10 text-center text-gray-400">데이터 로딩 중...</div>';
-            
+            container.innerHTML = '<div class="p-20 text-center text-gray-400">데이터 로딩 중...</div>';
             try {
                 const response = await fetch(`${API_URL}?type=${type}&t=${Date.now()}`);
-                const data = await response.json();
-                renderList(data, type);
-            } catch (error) {
-                container.innerHTML = '<div class="p-10 text-center text-red-400">데이터를 불러오지 못했습니다.</div>';
+                currentData = await response.json();
+                renderPage();
+            } catch (e) {
+                container.innerHTML = '<div class="p-20 text-center text-red-400">데이터 연결 실패</div>';
             }
         }
 
-        function renderList(data, type) {
+        function renderPage() {
             const container = document.getElementById('content-area');
             container.innerHTML = '';
             
-            if (data.length === 0) {
-                container.innerHTML = '<div class="p-10 text-center text-gray-400">표시할 데이터가 없습니다.</div>';
-                return;
+            const totalPages = Math.ceil(currentData.length / itemsPerPage);
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageItems = currentData.slice(start, end);
+
+            // 업종 탭일 때 제목 표시 (1페이지: 상위, 2페이지: 하위)
+            if (currentTab === 'sector') {
+                const title = currentPage === 1 ? "📈 등락 상위 업종" : "📉 등락 하위 업종";
+                container.innerHTML = `<div class="section-title">${title}</div>`;
             }
 
-            data.forEach((item, index) => {
-                if (type === 'sector') {
-                    if (index === 0) container.innerHTML += '<div class="section-title">업종 등락 상위</div>';
-                    if (index === 5) container.innerHTML += '<div class="section-title">업종 등락 하위</div>';
-                }
+            pageItems.forEach(item => {
+                const isUp = item.status === "상승";
+                const isDown = item.status === "하락";
+                const colorClass = isUp ? "text-up" : (isDown ? "text-down" : "text-gray-500");
+                const sign = isUp ? "▲" : (isDown ? "▼" : "");
 
-                // 2. 색상 판정 로직 정합 (상승/하락 문자열 매칭)
-                let colorClass = "text-gray-500";
-                let sign = "";
-                
-                if (item.status === "상승") {
-                    colorClass = "text-up";
-                    sign = "▲";
-                } else if (item.status === "하락") {
-                    colorClass = "text-down";
-                    sign = "▼";
-                }
-
-                if (type === 'stock') {
+                if (currentTab === 'stock') {
                     container.innerHTML += `
                         <div class="stock-card">
                             <div>
@@ -95,8 +108,8 @@
                                 <div class="text-xs text-gray-400">거래량 ${item.volume}</div>
                             </div>
                             <div class="text-right">
-                                <div class="font-bold">${Number(item.price).toLocaleString()}원</div>
-                                <div class="text-sm font-bold ${colorClass}">${item.status === '상승' ? '+' : ''}${item.rate}</div>
+                                <div class="font-bold text-gray-800">${Number(item.price).toLocaleString()}원</div>
+                                <div class="text-sm font-bold ${colorClass}">${isUp ? '+' : ''}${item.rate}</div>
                             </div>
                         </div>`;
                 } else {
@@ -107,12 +120,16 @@
                         </div>`;
                 }
             });
+
+            // 네비게이션 업데이트
+            document.getElementById('page-info').innerText = `${currentPage} / ${totalPages || 1}`;
+            document.getElementById('prev-btn').disabled = currentPage === 1;
+            document.getElementById('next-btn').disabled = currentPage === totalPages || totalPages === 0;
         }
 
-        function changeTab(type) {
-            document.getElementById('tab-stock').classList.toggle('active', type === 'stock');
-            document.getElementById('tab-sector').classList.toggle('active', type === 'sector');
-            loadData(type);
+        function movePage(step) {
+            currentPage += step;
+            renderPage();
         }
     </script>
 </body>
