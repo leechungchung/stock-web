@@ -95,6 +95,7 @@
             const btn = document.getElementById('manual-refresh');
             const containers = document.querySelectorAll('.view-container');
             
+            // 데이터 갱신 전 현재 인덱스 저장
             if (stockSwiper) currentStockIndex = stockSwiper.realIndex;
             if (sectorSwiper) currentSectorIndex = sectorSwiper.realIndex;
 
@@ -111,8 +112,15 @@
                 renderStock(sData.data);
                 renderSector(vData.data, vData.stats_list);
 
-                if (stockSwiper) stockSwiper.slideToLoop(currentStockIndex, 0);
-                if (sectorSwiper) sectorSwiper.slideToLoop(currentSectorIndex, 0);
+                // 렌더링 후 기존 위치로 복구
+                if (stockSwiper) {
+                    stockSwiper.slideToLoop(currentStockIndex, 0);
+                    updateDots(stockSwiper, 'stock-dots'); // 강제 도트 업데이트
+                }
+                if (sectorSwiper) {
+                    sectorSwiper.slideToLoop(currentSectorIndex, 0);
+                    updateDots(sectorSwiper, 'sector-dots'); // 강제 도트 업데이트
+                }
             } finally {
                 setTimeout(() => {
                     btn.classList.remove('rotating');
@@ -162,7 +170,10 @@
 
         function updateDots(swiper, containerId) {
             const dots = document.querySelectorAll(`#${containerId} .dot`);
-            dots.forEach((dot, idx) => dot.classList.toggle('active', idx === swiper.realIndex));
+            const activeIndex = swiper.realIndex; 
+            dots.forEach((dot, idx) => {
+                dot.classList.toggle('active', idx === activeIndex);
+            });
         }
 
         function createDots(swiper, containerId, total) {
@@ -208,8 +219,13 @@
                     document.querySelectorAll('.tab-item, .view-container').forEach(el => el.classList.remove('active'));
                     tab.classList.add('active');
                     document.getElementById(tab.dataset.target).classList.add('active');
-                    if(tab.dataset.target === 'stock-view') stockSwiper.update();
-                    else sectorSwiper.update();
+                    if(tab.dataset.target === 'stock-view') {
+                        stockSwiper.update();
+                        updateDots(stockSwiper, 'stock-dots');
+                    } else {
+                        sectorSwiper.update();
+                        updateDots(sectorSwiper, 'sector-dots');
+                    }
                 };
             });
 
