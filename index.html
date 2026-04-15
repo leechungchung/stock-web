@@ -18,49 +18,48 @@
         
         .main-wrapper { width: 100%; max-width: 500px; min-height: 100vh; background-color: var(--bg); display: flex; flex-direction: column; }
         
-        /* 헤더 & 네비게이션 */
-        .header-nav { display: flex; justify-content: space-between; align-items: center; padding: 5px 20px; background: white; border-bottom: 1px solid #f2f4f6; position: sticky; top: 0; z-index: 1000; }
-        .tab-nav { display: flex; gap: 20px; }
-        .tab-item { font-size: 16px; font-weight: 600; cursor: pointer; color: #adb5bd; padding: 15px 0; position: relative; }
+        /* 헤더 스타일 개선 */
+        .header-nav { display: flex; justify-content: space-between; align-items: center; padding: 0 20px; background: white; border-bottom: 1px solid #f2f4f6; position: sticky; top: 0; z-index: 1000; height: 60px; }
+        .tab-nav { display: flex; gap: 20px; height: 100%; }
+        .tab-item { font-size: 16px; font-weight: 600; cursor: pointer; color: #adb5bd; display: flex; align-items: center; position: relative; transition: color 0.2s; }
         .tab-item.active { color: var(--text-main); }
         .tab-item.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--text-main); border-radius: 2px; }
 
-        .refresh-btn { background: none; border: none; color: var(--text-sub); cursor: pointer; font-size: 18px; }
-        .refresh-btn.rotating { animation: rotate 0.8s linear infinite; }
+        /* 새로고침 버튼 명시적 스타일 */
+        .refresh-btn { background: #f2f4f6; border: none; color: #4e5968; cursor: pointer; font-size: 16px; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+        .refresh-btn:active { background: #e5e8eb; }
+        .refresh-btn.rotating i { animation: rotate 0.6s ease-in-out; }
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        .view-container { display: none; padding: 10px 0; }
+        /* 리프레시 애니메이션 (깜빡임 효과) */
+        .view-container { display: none; padding: 10px 0; transition: opacity 0.3s ease; }
         .view-container.active { display: block; }
+        .refreshing { opacity: 0.3; }
 
-        /* 리스트 스타일: 가격 우측, 등락률 포함 */
+        /* 리스트 레이아웃: 등락/등락률/현재가 모두 포함 */
         .item { display: flex; justify-content: space-between; align-items: center; padding: 22px 20px; border-bottom: 1px solid #f9fafb; }
         .info-area { display: flex; align-items: center; gap: 14px; }
         .rank-txt { font-size: 15px; font-weight: 600; color: var(--text-sub); width: 18px; text-align: center; }
         .name { font-size: 16px; font-weight: 500; color: var(--text-main); }
 
         .price-area { text-align: right; display: flex; flex-direction: column; gap: 3px; }
-        .price-txt { font-size: 15px; font-weight: 500; color: var(--text-main); }
-        .rate-badge { font-size: 13px; font-weight: 600; }
+        .price-txt { font-size: 15px; font-weight: 600; color: var(--text-main); }
+        .status-txt { font-size: 13px; font-weight: 500; display: flex; gap: 6px; justify-content: flex-end; }
         
         .상승 { color: var(--up); }
         .하락 { color: var(--down); }
         .보합 { color: var(--text-sub); }
 
-        /* 하단 컨트롤러: 도트 중앙 정렬 */
+        /* 컨트롤러 중앙 정렬 */
         .control-section { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 30px 0; }
         .swiper-pagination-custom { display: flex; gap: 8px; justify-content: center; }
         .dot { width: 7px; height: 7px; background: #e5e8eb; border-radius: 50%; cursor: pointer; transition: 0.3s; }
         .dot.active { background: #adb5bd; width: 18px; border-radius: 4px; }
-
         .nav-btns { display: flex; gap: 10px; }
         .nav-btn { background: #f2f4f6; border: none; padding: 10px 28px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: #4e5968; }
 
-        /* 푸터 버튼 */
         .footer-link { padding: 0 20px 40px; }
-        .btn-link { 
-            display: block; background: #191f28; color: white; text-decoration: none; 
-            padding: 18px; border-radius: 16px; text-align: center; font-size: 16px; font-weight: 500;
-        }
+        .btn-link { display: block; background: #191f28; color: white; text-decoration: none; padding: 18px; border-radius: 16px; text-align: center; font-size: 16px; font-weight: 500; }
         .logo-im { color: var(--im-orange); }
         .logo-m { font-size: 11px; margin-left: 1px; opacity: 0.8; }
     </style>
@@ -114,17 +113,26 @@
         let stockSwiper, sectorSwiper;
 
         async function fetchData() {
-            document.getElementById('manual-refresh').classList.add('rotating');
+            const btn = document.getElementById('manual-refresh');
+            const containers = document.querySelectorAll('.view-container');
+            
+            btn.classList.add('rotating');
+            containers.forEach(c => c.classList.add('refreshing')); // 깜빡임 효과 시작
+
             try {
                 const [resStock, resSector] = await Promise.all([
                     fetch(`${GAS_URL}?type=stock`), fetch(`${GAS_URL}?type=sector`)
                 ]);
                 const sData = await resStock.json();
                 const vData = await resSector.json();
+                
                 renderStock(sData.data);
                 renderSector(vData.data, vData.stats_list);
             } finally {
-                setTimeout(() => document.getElementById('manual-refresh').classList.remove('rotating'), 500);
+                setTimeout(() => {
+                    btn.classList.remove('rotating');
+                    containers.forEach(c => c.classList.remove('refreshing')); // 깜빡임 종료
+                }, 400);
             }
         }
 
@@ -138,7 +146,10 @@
                         <div class="info-area"><span class="rank-txt">${item.rank}</span><span class="name">${item.name}</span></div>
                         <div class="price-area">
                             <span class="price-txt">${item.price}원</span>
-                            <span class="rate-badge ${item.status}">${item.rate}</span>
+                            <div class="status-txt ${item.status}">
+                                <span>${item.change}</span>
+                                <span>${item.rate}</span>
+                            </div>
                         </div>
                     </div>`;
                 });
@@ -150,10 +161,7 @@
         function renderSector(data, stats) {
             const wrapper = document.getElementById('sector-wrapper');
             wrapper.innerHTML = '';
-            const groups = [
-                { title: "📈 등락 상위 업종", d: data.slice(0, 5), s: stats.slice(0, 5) },
-                { title: "📉 등락 하위 업종", d: data.slice(5, 10), s: stats.slice(5, 10) }
-            ];
+            const groups = [{ title: "📈 등락 상위 업종", d: data.slice(0, 5), s: stats.slice(0, 5) }, { title: "📉 등락 하위 업종", d: data.slice(5, 10), s: stats.slice(5, 10) }];
             groups.forEach(g => {
                 let html = `<div class="swiper-slide"><h4 style="margin: 0 20px 10px; font-size:14px; color:var(--text-sub); font-weight:500;">${g.title}</h4>`;
                 g.d.forEach((item, idx) => {
@@ -161,7 +169,7 @@
                         <span class="name">${item.name}</span>
                         <div class="price-area">
                             <span class="price-txt" style="font-size:13px; color:var(--text-sub);">${g.s[idx] || ""}</span>
-                            <span class="rate-badge ${item.status}">${item.rate}</span>
+                            <span class="status-txt ${item.status}">${item.rate}</span>
                         </div>
                     </div>`;
                 });
