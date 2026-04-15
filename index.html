@@ -16,56 +16,53 @@
 
         body { font-family: 'Pretendard', sans-serif; background-color: var(--gray-bg); margin: 0; padding: 0; display: flex; justify-content: center; color: var(--text-main); letter-spacing: -0.3px; -webkit-font-smoothing: antialiased; }
         
-        .main-wrapper { width: 100%; max-width: 500px; min-height: 100vh; background-color: var(--bg); display: flex; flex-direction: column; position: relative; }
+        .main-wrapper { width: 100%; max-width: 500px; min-height: 100vh; background-color: var(--bg); display: flex; flex-direction: column; }
         
-        /* 상단 네비게이션 & 리프레시 버튼 */
-        .header-nav { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: white; border-bottom: 1px solid #f2f4f6; position: sticky; top: 0; z-index: 1000; }
+        /* 헤더 & 네비게이션 */
+        .header-nav { display: flex; justify-content: space-between; align-items: center; padding: 5px 20px; background: white; border-bottom: 1px solid #f2f4f6; position: sticky; top: 0; z-index: 1000; }
         .tab-nav { display: flex; gap: 20px; }
-        .tab-item { font-size: 17px; font-weight: 600; cursor: pointer; color: #adb5bd; padding: 10px 0; position: relative; transition: color 0.2s; }
+        .tab-item { font-size: 16px; font-weight: 600; cursor: pointer; color: #adb5bd; padding: 15px 0; position: relative; }
         .tab-item.active { color: var(--text-main); }
         .tab-item.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--text-main); border-radius: 2px; }
 
-        .refresh-btn { background: none; border: none; color: var(--text-sub); cursor: pointer; font-size: 18px; padding: 5px; transition: transform 0.3s; }
-        .refresh-btn:active { transform: rotate(180px); }
+        .refresh-btn { background: none; border: none; color: var(--text-sub); cursor: pointer; font-size: 18px; }
         .refresh-btn.rotating { animation: rotate 0.8s linear infinite; }
-
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        .view-container { display: none; padding: 20px 0; min-height: 500px; }
+        .view-container { display: none; padding: 10px 0; }
         .view-container.active { display: block; }
 
-        /* 리스트 항목 간격 확대 */
-        .item { display: flex; justify-content: space-between; align-items: center; padding: 22px 20px; border-bottom: 1px solid #f9fafb; transition: background 0.2s; }
-        .item:active { background: #f9fafb; }
+        /* 리스트 스타일: 가격 우측, 등락률 포함 */
+        .item { display: flex; justify-content: space-between; align-items: center; padding: 22px 20px; border-bottom: 1px solid #f9fafb; }
         .info-area { display: flex; align-items: center; gap: 14px; }
         .rank-txt { font-size: 15px; font-weight: 600; color: var(--text-sub); width: 18px; text-align: center; }
-        .name-price { display: flex; flex-direction: column; gap: 5px; }
-        .name { font-size: 17px; font-weight: 500; color: var(--text-main); }
-        .price-txt { font-size: 14px; color: var(--text-sub); }
+        .name { font-size: 16px; font-weight: 500; color: var(--text-main); }
 
-        .rate-area { text-align: right; }
-        .rate-badge { font-size: 16px; font-weight: 600; }
+        .price-area { text-align: right; display: flex; flex-direction: column; gap: 3px; }
+        .price-txt { font-size: 15px; font-weight: 500; color: var(--text-main); }
+        .rate-badge { font-size: 13px; font-weight: 600; }
+        
         .상승 { color: var(--up); }
         .하락 { color: var(--down); }
         .보합 { color: var(--text-sub); }
 
-        /* 페이지네이션 */
-        .control-section { display: flex; flex-direction: column; align-items: center; gap: 18px; margin-top: 25px; padding-bottom: 35px; }
-        .nav-btns { display: flex; align-items: center; gap: 10px; width: 100%; justify-content: center; }
-        .nav-btn { background: #f2f4f6; border: none; padding: 11px 24px; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; color: #4e5968; }
-        
-        .swiper-pagination-custom { display: flex; gap: 8px; }
+        /* 하단 컨트롤러: 도트 중앙 정렬 */
+        .control-section { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 30px 0; }
+        .swiper-pagination-custom { display: flex; gap: 8px; justify-content: center; }
         .dot { width: 7px; height: 7px; background: #e5e8eb; border-radius: 50%; cursor: pointer; transition: 0.3s; }
         .dot.active { background: #adb5bd; width: 18px; border-radius: 4px; }
 
-        /* 하단 버튼 */
-        .footer-link { padding: 0 20px 50px; }
+        .nav-btns { display: flex; gap: 10px; }
+        .nav-btn { background: #f2f4f6; border: none; padding: 10px 28px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: #4e5968; }
+
+        /* 푸터 버튼 */
+        .footer-link { padding: 0 20px 40px; }
         .btn-link { 
             display: block; background: #191f28; color: white; text-decoration: none; 
             padding: 18px; border-radius: 16px; text-align: center; font-size: 16px; font-weight: 500;
         }
         .logo-im { color: var(--im-orange); }
-        .logo-m { font-size: 12px; margin-left: 1px; opacity: 0.8; }
+        .logo-m { font-size: 11px; margin-left: 1px; opacity: 0.8; }
     </style>
 </head>
 <body>
@@ -75,9 +72,7 @@
                 <div class="tab-item active" data-target="stock-view">인기종목</div>
                 <div class="tab-item" data-target="sector-view">업종시세</div>
             </div>
-            <button class="refresh-btn" id="manual-refresh" title="새로고침">
-                <i class="fa-solid fa-rotate-right"></i>
-            </button>
+            <button class="refresh-btn" id="manual-refresh"><i class="fa-solid fa-rotate-right"></i></button>
         </div>
 
         <div id="stock-view" class="view-container active">
@@ -97,9 +92,10 @@
             <div class="swiper" id="sector-swiper">
                 <div class="swiper-wrapper" id="sector-wrapper"></div>
                 <div class="control-section">
+                    <div class="swiper-pagination-custom" id="sector-dots"></div>
                     <div class="nav-btns">
-                        <button class="nav-btn" id="sector-prev">이전 그룹</button>
-                        <button class="nav-btn" id="sector-next">다음 그룹</button>
+                        <button class="nav-btn" id="sector-prev">이전</button>
+                        <button class="nav-btn" id="sector-next">다음</button>
                     </div>
                 </div>
             </div>
@@ -116,106 +112,43 @@
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbxQTP2WpINbKU3cPu2j38V0s1-B24-PsJhU5jfvMw0onDjDa_KCEFu19C5UM-ucA85UAg/exec";
         let stockSwiper, sectorSwiper;
-        let refreshInterval;
-
-        function switchTab(targetId) {
-            document.querySelectorAll('.tab-item').forEach(t => t.classList.toggle('active', t.dataset.target === targetId));
-            document.querySelectorAll('.view-container').forEach(v => v.classList.toggle('active', v.id === targetId));
-            if(stockSwiper) stockSwiper.update();
-            if(sectorSwiper) sectorSwiper.update();
-        }
 
         async function fetchData() {
-            const refreshBtn = document.getElementById('manual-refresh');
-            refreshBtn.classList.add('rotating');
-            
+            document.getElementById('manual-refresh').classList.add('rotating');
             try {
                 const [resStock, resSector] = await Promise.all([
                     fetch(`${GAS_URL}?type=stock`), fetch(`${GAS_URL}?type=sector`)
                 ]);
                 const sData = await resStock.json();
                 const vData = await resSector.json();
-
                 renderStock(sData.data);
                 renderSector(vData.data, vData.stats_list);
-                
-                if(stockSwiper) stockSwiper.update();
-                if(sectorSwiper) sectorSwiper.update();
-                
-            } catch (err) {
-                console.error("Data fetch failed:", err);
             } finally {
-                setTimeout(() => refreshBtn.classList.remove('rotating'), 500);
+                setTimeout(() => document.getElementById('manual-refresh').classList.remove('rotating'), 500);
             }
-        }
-
-        function startAutoRefresh() {
-            if (refreshInterval) clearInterval(refreshInterval);
-            refreshInterval = setInterval(fetchData, 10000); // 10초
-        }
-
-        async function init() {
-            await fetchData();
-            startAutoRefresh();
-
-            stockSwiper = new Swiper('#stock-swiper', { 
-                loop: true, navigation: { nextEl: '#stock-next', prevEl: '#stock-prev' },
-                on: {
-                    init: function() { createDots(this); },
-                    slideChange: function() { updateDots(this); }
-                }
-            });
-
-            sectorSwiper = new Swiper('#sector-swiper', { 
-                loop: true, navigation: { nextEl: '#sector-next', prevEl: '#sector-prev' }
-            });
-        }
-
-        function createDots(swiper) {
-            const dotContainer = document.getElementById('stock-dots');
-            dotContainer.innerHTML = '';
-            for(let i=0; i<6; i++) {
-                const dot = document.createElement('div');
-                dot.className = 'dot' + (i === 0 ? ' active' : '');
-                dot.onclick = () => swiper.slideToLoop(i);
-                dotContainer.appendChild(dot);
-            }
-        }
-
-        function updateDots(swiper) {
-            const dots = document.querySelectorAll('#stock-dots .dot');
-            dots.forEach((dot, idx) => {
-                dot.classList.toggle('active', idx === swiper.realIndex);
-            });
         }
 
         function renderStock(data) {
             const wrapper = document.getElementById('stock-wrapper');
-            const currentSlide = stockSwiper ? stockSwiper.realIndex : 0;
             wrapper.innerHTML = '';
             for (let i = 0; i < 30; i += 5) {
-                const chunk = data.slice(i, i + 5);
                 let html = '<div class="swiper-slide">';
-                chunk.forEach(item => {
+                data.slice(i, i + 5).forEach(item => {
                     html += `<div class="item">
-                        <div class="info-area">
-                            <span class="rank-txt">${item.rank}</span>
-                            <div class="name-price">
-                                <span class="name">${item.name}</span>
-                                <span class="price-txt">${item.price}원</span>
-                            </div>
+                        <div class="info-area"><span class="rank-txt">${item.rank}</span><span class="name">${item.name}</span></div>
+                        <div class="price-area">
+                            <span class="price-txt">${item.price}원</span>
+                            <span class="rate-badge ${item.status}">${item.rate}</span>
                         </div>
-                        <div class="rate-area"><span class="rate-badge ${item.status}">${item.rate}</span></div>
                     </div>`;
                 });
                 wrapper.innerHTML += html + '</div>';
             }
-            if(stockSwiper) stockSwiper.slideToLoop(currentSlide, 0);
+            if(stockSwiper) stockSwiper.update();
         }
 
         function renderSector(data, stats) {
             const wrapper = document.getElementById('sector-wrapper');
-            const currentSlide = sectorSwiper ? sectorSwiper.realIndex : 0;
             wrapper.innerHTML = '';
             const groups = [
                 { title: "📈 등락 상위 업종", d: data.slice(0, 5), s: stats.slice(0, 5) },
@@ -225,27 +158,62 @@
                 let html = `<div class="swiper-slide"><h4 style="margin: 0 20px 10px; font-size:14px; color:var(--text-sub); font-weight:500;">${g.title}</h4>`;
                 g.d.forEach((item, idx) => {
                     html += `<div class="item">
-                        <div class="name-price">
-                            <span class="name">${item.name}</span>
-                            <span class="price-txt" style="font-size:12px;">${g.s[idx] || ""}</span>
+                        <span class="name">${item.name}</span>
+                        <div class="price-area">
+                            <span class="price-txt" style="font-size:13px; color:var(--text-sub);">${g.s[idx] || ""}</span>
+                            <span class="rate-badge ${item.status}">${item.rate}</span>
                         </div>
-                        <div class="rate-area"><span class="rate-badge ${item.status}">${item.rate}</span></div>
                     </div>`;
                 });
                 wrapper.innerHTML += html + '</div>';
             });
-            if(sectorSwiper) sectorSwiper.slideToLoop(currentSlide, 0);
+            if(sectorSwiper) sectorSwiper.update();
+        }
+
+        function setupSwiper(id, dotId, prevId, nextId, total) {
+            return new Swiper(id, {
+                loop: true,
+                navigation: { nextEl: nextId, prevEl: prevId },
+                on: {
+                    init: function() { createDots(dotId, this, total); },
+                    slideChange: function() { updateDots(dotId, this); }
+                }
+            });
+        }
+
+        function createDots(containerId, swiper, total) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            for(let i=0; i<total; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'dot' + (i === 0 ? ' active' : '');
+                dot.onclick = () => swiper.slideToLoop(i);
+                container.appendChild(dot);
+            }
+        }
+
+        function updateDots(containerId, swiper) {
+            const dots = document.querySelectorAll(`#${containerId} .dot`);
+            dots.forEach((dot, idx) => dot.classList.toggle('active', idx === swiper.realIndex));
+        }
+
+        async function init() {
+            await fetchData();
+            stockSwiper = setupSwiper('#stock-swiper', 'stock-dots', '#stock-prev', '#stock-next', 6);
+            sectorSwiper = setupSwiper('#sector-swiper', 'sector-dots', '#sector-prev', '#sector-next', 2);
+            setInterval(fetchData, 10000);
         }
 
         document.querySelectorAll('.tab-item').forEach(tab => {
-            tab.addEventListener('click', () => switchTab(tab.dataset.target));
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab-item, .view-container').forEach(el => el.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.target).classList.add('active');
+                stockSwiper.update(); sectorSwiper.update();
+            });
         });
 
-        document.getElementById('manual-refresh').addEventListener('click', () => {
-            fetchData();
-            startAutoRefresh(); // 수동 클릭 시 타이머 리셋
-        });
-
+        document.getElementById('manual-refresh').addEventListener('click', fetchData);
         init();
     </script>
 </body>
