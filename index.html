@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ImChart</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/dist/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
         
@@ -18,39 +18,43 @@
         
         .main-wrapper { width: 100%; max-width: 500px; min-height: 100vh; background-color: var(--bg); display: flex; flex-direction: column; }
         
-        /* 헤더 스타일 개선 */
+        /* 헤더 스타일 */
         .header-nav { display: flex; justify-content: space-between; align-items: center; padding: 0 20px; background: white; border-bottom: 1px solid #f2f4f6; position: sticky; top: 0; z-index: 1000; height: 60px; }
         .tab-nav { display: flex; gap: 20px; height: 100%; }
-        .tab-item { font-size: 16px; font-weight: 600; cursor: pointer; color: #adb5bd; display: flex; align-items: center; position: relative; transition: color 0.2s; }
+        .tab-item { font-size: 16px; font-weight: 600; cursor: pointer; color: #adb5bd; display: flex; align-items: center; position: relative; }
         .tab-item.active { color: var(--text-main); }
         .tab-item.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--text-main); border-radius: 2px; }
 
-        /* 새로고침 버튼 명시적 스타일 */
-        .refresh-btn { background: #f2f4f6; border: none; color: #4e5968; cursor: pointer; font-size: 16px; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
-        .refresh-btn:active { background: #e5e8eb; }
+        /* 수동 새로고침 버튼 (아이콘 포함) */
+        .refresh-btn { background: #f2f4f6; border: none; color: #4e5968; cursor: pointer; font-size: 16px; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .refresh-btn i { font-size: 18px; }
         .refresh-btn.rotating i { animation: rotate 0.6s ease-in-out; }
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /* 리프레시 애니메이션 (깜빡임 효과) */
-        .view-container { display: none; padding: 10px 0; transition: opacity 0.3s ease; }
+        .view-container { display: none; padding: 10px 0; transition: opacity 0.2s; }
         .view-container.active { display: block; }
-        .refreshing { opacity: 0.3; }
+        .refreshing { opacity: 0.4; }
 
-        /* 리스트 레이아웃: 등락/등락률/현재가 모두 포함 */
+        /* 리스트 기본 레이아웃 */
         .item { display: flex; justify-content: space-between; align-items: center; padding: 22px 20px; border-bottom: 1px solid #f9fafb; }
         .info-area { display: flex; align-items: center; gap: 14px; }
         .rank-txt { font-size: 15px; font-weight: 600; color: var(--text-sub); width: 18px; text-align: center; }
         .name { font-size: 16px; font-weight: 500; color: var(--text-main); }
+        
+        /* 업종명 하단 보조 정보 전용 스타일 */
+        .sub-text { font-size: 13px; color: var(--text-sub); margin-top: 4px; display: block; }
 
-        .price-area { text-align: right; display: flex; flex-direction: column; gap: 3px; }
+        /* 우측 가격/등락률 영역 */
+        .right-area { text-align: right; display: flex; flex-direction: column; gap: 4px; }
         .price-txt { font-size: 15px; font-weight: 600; color: var(--text-main); }
-        .status-txt { font-size: 13px; font-weight: 500; display: flex; gap: 6px; justify-content: flex-end; }
+        .rate-big { font-size: 18px; font-weight: 600; } /* 우측 등락률 강조 */
+        .status-txt { font-size: 13px; font-weight: 500; display: flex; gap: 4px; justify-content: flex-end; }
         
         .상승 { color: var(--up); }
         .하락 { color: var(--down); }
         .보합 { color: var(--text-sub); }
 
-        /* 컨트롤러 중앙 정렬 */
+        /* 컨트롤러 */
         .control-section { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 30px 0; }
         .swiper-pagination-custom { display: flex; gap: 8px; justify-content: center; }
         .dot { width: 7px; height: 7px; background: #e5e8eb; border-radius: 50%; cursor: pointer; transition: 0.3s; }
@@ -61,7 +65,6 @@
         .footer-link { padding: 0 20px 40px; }
         .btn-link { display: block; background: #191f28; color: white; text-decoration: none; padding: 18px; border-radius: 16px; text-align: center; font-size: 16px; font-weight: 500; }
         .logo-im { color: var(--im-orange); }
-        .logo-m { font-size: 11px; margin-left: 1px; opacity: 0.8; }
     </style>
 </head>
 <body>
@@ -71,7 +74,9 @@
                 <div class="tab-item active" data-target="stock-view">인기종목</div>
                 <div class="tab-item" data-target="sector-view">업종시세</div>
             </div>
-            <button class="refresh-btn" id="manual-refresh"><i class="fa-solid fa-rotate-right"></i></button>
+            <button class="refresh-btn" id="manual-refresh">
+                <i class="fa-solid fa-arrows-rotate"></i>
+            </button>
         </div>
 
         <div id="stock-view" class="view-container active">
@@ -102,7 +107,7 @@
 
         <div class="footer-link">
             <a href="https://www.iamchart.co.kr" class="btn-link">
-                아<span class="logo-im">임</span>차트<span class="logo-m">M</span> 에서 추세확인
+                아<span class="logo-im">임</span>차트M 에서 추세확인
             </a>
         </div>
     </div>
@@ -115,9 +120,8 @@
         async function fetchData() {
             const btn = document.getElementById('manual-refresh');
             const containers = document.querySelectorAll('.view-container');
-            
             btn.classList.add('rotating');
-            containers.forEach(c => c.classList.add('refreshing')); // 깜빡임 효과 시작
+            containers.forEach(c => c.classList.add('refreshing'));
 
             try {
                 const [resStock, resSector] = await Promise.all([
@@ -125,14 +129,13 @@
                 ]);
                 const sData = await resStock.json();
                 const vData = await resSector.json();
-                
                 renderStock(sData.data);
                 renderSector(vData.data, vData.stats_list);
             } finally {
                 setTimeout(() => {
                     btn.classList.remove('rotating');
-                    containers.forEach(c => c.classList.remove('refreshing')); // 깜빡임 종료
-                }, 400);
+                    containers.forEach(c => c.classList.remove('refreshing'));
+                }, 500);
             }
         }
 
@@ -144,12 +147,9 @@
                 data.slice(i, i + 5).forEach(item => {
                     html += `<div class="item">
                         <div class="info-area"><span class="rank-txt">${item.rank}</span><span class="name">${item.name}</span></div>
-                        <div class="price-area">
+                        <div class="right-area">
                             <span class="price-txt">${item.price}원</span>
-                            <div class="status-txt ${item.status}">
-                                <span>${item.change}</span>
-                                <span>${item.rate}</span>
-                            </div>
+                            <div class="status-txt ${item.status}"><span>${item.change}</span><span>${item.rate}</span></div>
                         </div>
                     </div>`;
                 });
@@ -161,15 +161,20 @@
         function renderSector(data, stats) {
             const wrapper = document.getElementById('sector-wrapper');
             wrapper.innerHTML = '';
-            const groups = [{ title: "📈 등락 상위 업종", d: data.slice(0, 5), s: stats.slice(0, 5) }, { title: "📉 등락 하위 업종", d: data.slice(5, 10), s: stats.slice(5, 10) }];
+            const groups = [
+                { title: "📈 등락 상위 업종", d: data.slice(0, 5), s: stats.slice(0, 5) },
+                { title: "📉 등락 하위 업종", d: data.slice(5, 10), s: stats.slice(5, 10) }
+            ];
             groups.forEach(g => {
                 let html = `<div class="swiper-slide"><h4 style="margin: 0 20px 10px; font-size:14px; color:var(--text-sub); font-weight:500;">${g.title}</h4>`;
                 g.d.forEach((item, idx) => {
                     html += `<div class="item">
-                        <span class="name">${item.name}</span>
-                        <div class="price-area">
-                            <span class="price-txt" style="font-size:13px; color:var(--text-sub);">${g.s[idx] || ""}</span>
-                            <span class="status-txt ${item.status}">${item.rate}</span>
+                        <div>
+                            <span class="name">${item.name}</span>
+                            <span class="sub-text">${g.s[idx] || ""}</span>
+                        </div>
+                        <div class="right-area">
+                            <span class="rate-big ${item.status}">${item.rate}</span>
                         </div>
                     </div>`;
                 });
@@ -180,12 +185,8 @@
 
         function setupSwiper(id, dotId, prevId, nextId, total) {
             return new Swiper(id, {
-                loop: true,
-                navigation: { nextEl: nextId, prevEl: prevId },
-                on: {
-                    init: function() { createDots(dotId, this, total); },
-                    slideChange: function() { updateDots(dotId, this); }
-                }
+                loop: true, navigation: { nextEl: nextId, prevEl: prevId },
+                on: { init: function() { createDots(dotId, this, total); }, slideChange: function() { updateDots(dotId, this); } }
             });
         }
 
@@ -209,7 +210,7 @@
             await fetchData();
             stockSwiper = setupSwiper('#stock-swiper', 'stock-dots', '#stock-prev', '#stock-next', 6);
             sectorSwiper = setupSwiper('#sector-swiper', 'sector-dots', '#sector-prev', '#sector-next', 2);
-            setInterval(fetchData, 10000);
+            // 10초 자동 리프레시는 제거되었습니다.
         }
 
         document.querySelectorAll('.tab-item').forEach(tab => {
