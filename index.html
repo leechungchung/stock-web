@@ -7,56 +7,66 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/dist/css/all.min.css">
     <style>
-        :root { --primary-color: #2563eb; --up-color: #ef4444; --down-color: #3b82f6; --bg-color: #e2e8f0; }
-        body { font-family: 'Pretendard', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; display: flex; justify-content: center; }
+        :root { --primary-color: #2563eb; --up-color: #ef4444; --down-color: #3b82f6; --bg-color: #f4f6f8; --im-orange: #ff8c00; }
         
-        .main-wrapper { width: 100%; max-width: 500px; min-height: 100vh; background-color: #f8fafc; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; display: flex; justify-content: center; -webkit-font-smoothing: antialiased; }
         
-        /* 상단 탭 - 글자 크기 확대 */
-        .tab-nav { display: flex; background: white; border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; z-index: 1000; }
-        .tab-item { flex: 1; text-align: center; padding: 18px; font-weight: 800; cursor: pointer; color: #64748b; font-size: 17px; }
-        .tab-item.active { color: var(--primary-color); border-bottom: 4px solid var(--primary-color); }
+        .main-wrapper { width: 100%; max-width: 500px; min-height: 100vh; background-color: #ffffff; box-shadow: 0 0 15px rgba(0,0,0,0.05); }
+        
+        /* 상단 탭 - 미니멀 스타일 */
+        .tab-nav { display: flex; background: white; border-bottom: 1px solid #eeeeee; position: sticky; top: 0; z-index: 1000; }
+        .tab-item { flex: 1; text-align: center; padding: 15px; cursor: pointer; color: #888888; font-size: 15px; font-weight: 400; }
+        .tab-item.active { color: #333333; border-bottom: 2px solid #333333; }
 
-        .view-container { display: none; padding: 12px; }
+        .view-container { display: none; padding: 15px; }
         .view-container.active { display: block; }
 
-        /* 페이지 번호 표시 (1/6) */
-        .page-indicator { text-align: right; font-size: 14px; font-weight: bold; color: #94a3b8; margin-bottom: 8px; padding-right: 5px; }
+        .page-indicator { text-align: right; font-size: 13px; color: #bbbbbb; margin-bottom: 10px; padding-right: 5px; }
 
-        /* 카드 및 아이템 - 텍스트 대폭 확대 */
-        .card { background: white; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid #e2e8f0; }
-        .item { display: flex; justify-content: space-between; align-items: center; padding: 20px 18px; border-bottom: 1px solid #f1f5f9; }
+        /* 리스트 카드 - 폰트 사이즈 및 볼드 제거 */
+        .card { background: white; border-radius: 12px; border: 1px solid #f0f0f0; overflow: hidden; }
+        .item { display: flex; justify-content: space-between; align-items: center; padding: 15px 15px; border-bottom: 1px solid #f9f9f9; }
         .item:last-child { border-bottom: none; }
         
-        .info { display: flex; flex-direction: column; gap: 5px; }
-        .name { font-weight: 800; font-size: 19px; color: #1e293b; letter-spacing: -0.5px; }
-        .sub-info { font-size: 14px; color: #64748b; font-weight: 500; }
-        .sector-stats { font-size: 13px; color: #94a3b8; margin-top: 2px; }
+        .info { display: flex; flex-direction: column; gap: 2px; }
+        .name { font-size: 15px; color: #333333; font-weight: 400; }
+        .sub-info { font-size: 12px; color: #999999; }
+        .sector-stats { font-size: 11px; color: #aaaaaa; margin-top: 1px; }
         
-        .rate-box { text-align: right; min-width: 90px; }
-        .rate { font-size: 22px; font-weight: 900; }
-        .change { font-size: 13px; font-weight: 600; margin-top: 2px; }
+        .rate-box { text-align: right; }
+        .rate { font-size: 17px; font-weight: 400; }
+        .change { font-size: 12px; margin-top: 1px; }
 
         .상승 { color: var(--up-color); }
         .하락 { color: var(--down-color); }
-        .보합 { color: #64748b; }
+        .보합 { color: #888888; }
 
-        /* 컨트롤 버튼 - 시원시원하게 */
-        .nav-btns { display: flex; justify-content: center; gap: 12px; margin-top: 20px; margin-bottom: 20px; }
-        .nav-btn { background: white; border: 2px solid #e2e8f0; padding: 12px 24px; border-radius: 30px; cursor: pointer; font-size: 15px; font-weight: bold; color: #1e293b; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .nav-btn:active { background: #f1f5f9; }
+        .nav-btns { display: flex; justify-content: center; gap: 10px; margin-top: 15px; margin-bottom: 15px; }
+        .nav-btn { background: #ffffff; border: 1px solid #eeeeee; padding: 8px 18px; border-radius: 20px; cursor: pointer; font-size: 13px; color: #666666; }
 
+        /* 하단 버튼 - 로고 디테일 (임 자만 주황색) */
         .footer-link { padding: 10px 15px 40px 15px; text-align: center; }
-        .btn-link { display: block; background: var(--primary-color); color: white; text-decoration: none; padding: 18px; border-radius: 12px; font-weight: 800; font-size: 17px; }
-
-        #loading { text-align: center; padding: 100px 20px; font-size: 18px; font-weight: bold; color: #94a3b8; }
+        .btn-link { 
+            display: block; 
+            background: #333333; 
+            color: white; 
+            text-decoration: none; 
+            padding: 16px; 
+            border-radius: 10px; 
+            font-size: 15px; 
+            font-weight: 400; 
+        }
+        .btn-link .logo-im { color: var(--im-orange); } /* '임' 자 전용 주황색 */
+        .btn-link .logo-m { font-size: 10px; margin-left: 1px; vertical-align: baseline; opacity: 0.9; }
+        
+        #loading { text-align: center; padding: 80px 20px; color: #cccccc; font-size: 14px; }
     </style>
 </head>
 <body>
     <div class="main-wrapper">
         <div class="tab-nav">
-            <div class="tab-item active" data-target="stock-view">인기종목</div>
-            <div class="tab-item" data-target="sector-view">업종시세</div>
+            <div class="tab-item active" data-target="stock-view">실시간 인기종목</div>
+            <div class="tab-item" data-target="sector-view">업종별 시세</div>
         </div>
 
         <div id="stock-view" class="view-container active">
@@ -64,8 +74,8 @@
             <div class="swiper" id="stock-swiper">
                 <div class="swiper-wrapper" id="stock-wrapper"></div>
                 <div class="nav-btns">
-                    <button class="nav-btn" id="stock-prev"><i class="fa-solid fa-chevron-left"></i> 이전</button>
-                    <button class="nav-btn" id="stock-next">다음 <i class="fa-solid fa-chevron-right"></i></button>
+                    <button class="nav-btn" id="stock-prev">이전</button>
+                    <button class="nav-btn" id="stock-next">다음</button>
                 </div>
             </div>
         </div>
@@ -75,13 +85,15 @@
             <div class="swiper" id="sector-swiper">
                 <div class="swiper-wrapper" id="sector-wrapper"></div>
                 <div class="nav-btns">
-                    <button class="nav-btn" id="sector-prev">상위/하위 전환 <i class="fa-solid fa-arrows-rotate"></i></button>
+                    <button class="nav-btn" id="sector-prev">상위 / 하위 전환</button>
                 </div>
             </div>
         </div>
 
         <div class="footer-link">
-            <a href="https://www.iamchart.co.kr" class="btn-link">아임차트M 상세분석 보기</a>
+            <a href="https://www.iamchart.co.kr" class="btn-link">
+                아<span class="logo-im">임</span>차트<span class="logo-m">M</span> 에서 추세확인
+            </a>
         </div>
     </div>
 
@@ -112,33 +124,18 @@
                 renderStock(sData.data);
                 renderSector(vData.data, vData.stats_list);
 
-                // 스와이퍼 초기화 및 페이지 번호 연동
                 stockSwiper = new Swiper('#stock-swiper', { 
-                    loop: true, 
-                    navigation: { nextEl: '#stock-next', prevEl: '#stock-prev' },
-                    on: {
-                        slideChange: function() {
-                            document.getElementById('stock-page-num').innerText = `${this.realIndex + 1} / 6`;
-                        }
-                    }
+                    loop: true, navigation: { nextEl: '#stock-next', prevEl: '#stock-prev' },
+                    on: { slideChange: function() { document.getElementById('stock-page-num').innerText = `${this.realIndex + 1} / 6`; } }
                 });
 
                 sectorSwiper = new Swiper('#sector-swiper', { 
-                    loop: true, 
-                    navigation: { nextEl: '#sector-prev' },
-                    on: {
-                        slideChange: function() {
-                            document.getElementById('sector-page-num').innerText = `${this.realIndex + 1} / 2`;
-                        }
-                    }
+                    loop: true, navigation: { nextEl: '#sector-prev' },
+                    on: { slideChange: function() { document.getElementById('sector-page-num').innerText = `${this.realIndex + 1} / 2`; } }
                 });
 
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('tab') === 'sector') switchTab('sector-view');
-
-            } catch (err) {
-                console.error(err);
-            }
+                if (new URLSearchParams(window.location.search).get('tab') === 'sector') switchTab('sector-view');
+            } catch (err) { console.error(err); }
         }
 
         function renderStock(data) {
@@ -165,7 +162,7 @@
                 { title: "📉 등락 하위 업종", d: data.slice(5, 10), s: stats.slice(5, 10) }
             ];
             groups.forEach(g => {
-                let html = `<div class="swiper-slide"><h4 style="margin: 5px 10px; font-size:18px;">${g.title}</h4><div class="card">`;
+                let html = `<div class="swiper-slide"><h4 style="margin: 5px 10px; font-size:14px; color:#666; font-weight:400;">${g.title}</h4><div class="card">`;
                 g.d.forEach((item, idx) => {
                     html += `<div class="item">
                         <div class="info"><span class="name">${item.name}</span><span class="sector-stats">${g.s[idx] || ""}</span></div>
