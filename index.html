@@ -26,10 +26,8 @@
         .info-area { display: flex; align-items: center; gap: 14px; }
         .rank-txt { font-size: 15px; font-weight: 600; color: var(--text-sub); width: 18px; text-align: center; }
         .name { font-size: 16px; font-weight: 500; color: var(--text-main); }
-        .sub-text { font-size: 13px; color: var(--text-sub); margin-top: 4px; display: block; }
         .right-area { text-align: right; display: flex; flex-direction: column; gap: 4px; }
         .price-txt { font-size: 15px; font-weight: 600; color: var(--text-main); }
-        .rate-big { font-size: 18px; font-weight: 600; }
         .status-txt { font-size: 13px; font-weight: 500; display: flex; gap: 6px; justify-content: flex-end; }
         .상승 { color: var(--up); } .하락 { color: var(--down); } .보합 { color: var(--text-sub); }
         .control-section { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 30px 0; }
@@ -88,11 +86,17 @@
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbxQTP2WpINbKU3cPu2j38V0s1-B24-PsJhU5jfvMw0onDjDa_KCEFu19C5UM-ucA85UAg/exec";
         let stockSwiper, sectorSwiper;
+        let currentStockIdx = 0;
+        let currentSectorIdx = 0;
 
-        // 1. 데이터 로드 및 렌더링
         async function fetchData() {
             const btn = document.getElementById('manual-refresh');
             const containers = document.querySelectorAll('.view-container');
+            
+            // 1. 현재 인덱스 미리 저장
+            if (stockSwiper) currentStockIdx = stockSwiper.realIndex;
+            if (sectorSwiper) currentSectorIdx = sectorSwiper.realIndex;
+
             btn.classList.add('rotating');
             containers.forEach(c => c.classList.add('refreshing'));
 
@@ -102,8 +106,17 @@
                 ]);
                 const sData = await resStock.json();
                 const vData = await resSector.json();
+                
+                // 2. 데이터 렌더링
                 renderStock(sData.data);
                 renderSector(vData.data, vData.stats_list);
+
+                // 3. 스와이퍼 재초기화 (루프 오류 방지의 핵심)
+                initSwipers();
+
+                // 4. 원래 위치로 복구
+                stockSwiper.slideToLoop(currentStockIdx, 0);
+                sectorSwiper.slideToLoop(currentSectorIdx, 0);
             } finally {
                 setTimeout(() => {
                     btn.classList.remove('rotating');
@@ -128,7 +141,6 @@
                 });
                 wrapper.innerHTML += html + '</div>';
             }
-            if(stockSwiper) { stockSwiper.update(); }
         }
 
         function renderSector(data, stats) {
@@ -142,38 +154,18 @@
                 let html = `<div class="swiper-slide"><h4 style="margin: 0 20px 10px; font-size:14px; color:var(--text-sub); font-weight:500;">${g.title}</h4>`;
                 g.d.forEach((item, idx) => {
                     html += `<div class="item">
-                        <div><span class="name">${item.name}</span><span class="sub-text">${g.s[idx] || ""}</span></div>
+                        <div><span class="name">${item.name}</span><span style="font-size:13px; color:var(--text-sub); margin-top:4px; display:block;">${g.s[idx] || ""}</span></div>
                         <div class="right-area"><span class="rate-big ${item.status}">${item.rate}</span></div>
                     </div>`;
                 });
                 wrapper.innerHTML += html + '</div>';
             });
-            if(sectorSwiper) { sectorSwiper.update(); }
         }
 
-        // 2. 도트 업데이트 함수 (loop 완벽 대응)
-        function updateDots(swiper, containerId) {
-            const dots = document.querySelectorAll(`#${containerId} .dot`);
-            const activeIndex = swiper.realIndex; 
-            dots.forEach((dot, idx) => {
-                dot.classList.toggle('active', idx === activeIndex);
-            });
-        }
-
-        function createDots(swiper, containerId, total) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            for (let i = 0; i < total; i++) {
-                const dot = document.createElement('div');
-                dot.className = 'dot' + (i === 0 ? ' active' : '');
-                dot.onclick = () => swiper.slideToLoop(i);
-                container.appendChild(dot);
-            }
-        }
-
-        // 3. 초기화 로직 (URL 파라미터 감지 포함)
-        async function init() {
-            await fetchData();
+        function initSwipers() {
+            // 기존 스와이퍼가 있다면 완전히 파괴
+            if (stockSwiper) stockSwiper.destroy(true, true);
+            if (sectorSwiper) sectorSwiper.destroy(true, true);
 
             stockSwiper = new Swiper('#stock-swiper', {
                 loop: true,
@@ -192,22 +184,39 @@
                     slideChange: function() { updateDots(this, 'sector-dots'); }
                 }
             });
+        }
 
-            // 탭 로직 정의
-            const tabs = document.querySelectorAll('.tab-item');
-            tabs.forEach(tab => {
+        function createDots(swiper, containerId, total) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            for (let i = 0; i < total; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'dot' + (i === 0 ? ' active' : '');
+                dot.onclick = () => swiper.slideToLoop(i);
+                container.appendChild(dot);
+            }
+        }
+
+        function updateDots(swiper, containerId) {
+            const dots = document.querySelectorAll(`#${containerId} .dot`);
+            dots.forEach((dot, idx) => dot.classList.toggle('active', idx === swiper.realIndex));
+        }
+
+        async function init() {
+            await fetchData();
+
+            // 탭 클릭 이벤트
+            document.querySelectorAll('.tab-item').forEach(tab => {
                 tab.onclick = () => {
                     document.querySelectorAll('.tab-item, .view-container').forEach(el => el.classList.remove('active'));
                     tab.classList.add('active');
-                    const target = document.getElementById(tab.dataset.target);
-                    target.classList.add('active');
-                    // 탭 전환 시 스와이퍼 갱신
-                    if(tab.dataset.target === 'stock-view') stockSwiper.update();
-                    else sectorSwiper.update();
+                    document.getElementById(tab.dataset.target).classList.add('active');
+                    stockSwiper.update();
+                    sectorSwiper.update();
                 };
             });
 
-            // URL 파라미터 체크 및 강제 탭 전환
+            // URL 파라미터 체크
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('tab') === 'sector') {
                 const sectorTab = document.querySelector('.tab-item[data-target="sector-view"]');
@@ -219,4 +228,3 @@
         init();
     </script>
 </body>
-</html>
