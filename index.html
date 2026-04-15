@@ -7,99 +7,113 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/dist/css/all.min.css">
     <style>
-        :root { --primary-color: #2563eb; --up-color: #ef4444; --down-color: #3b82f6; --bg-color: #f8fafc; }
-        body { font-family: 'Pretendard', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; overflow-x: hidden; }
+        :root { --primary-color: #2563eb; --up-color: #ef4444; --down-color: #3b82f6; --bg-color: #e2e8f0; } /* 배경색을 약간 어둡게 하여 컨테이너 강조 */
+        
+        body { 
+            font-family: 'Pretendard', sans-serif; 
+            background-color: var(--bg-color); 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            justify-content: center; /* PC에서 중앙 정렬 */
+        }
+
+        /* 메인 컨테이너 사이즈 고정 */
+        .main-wrapper {
+            width: 100%;
+            max-width: 500px; /* 최대 너비 고정 */
+            min-height: 100vh;
+            background-color: #f8fafc; /* 실제 컨텐츠 배경 */
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            position: relative;
+        }
         
         /* 상단 탭 메뉴 */
         .tab-nav { display: flex; background: white; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 1000; }
-        .tab-item { flex: 1; text-align: center; padding: 15px; font-weight: bold; cursor: pointer; color: #64748b; transition: 0.3s; }
+        .tab-item { flex: 1; text-align: center; padding: 15px; font-weight: bold; cursor: pointer; color: #64748b; font-size: 14px; }
         .tab-item.active { color: var(--primary-color); border-bottom: 3px solid var(--primary-color); }
 
         /* 컨텐츠 뷰 */
-        .view-container { display: none; padding: 15px; min-height: 80vh; }
+        .view-container { display: none; padding: 15px; }
         .view-container.active { display: block; }
 
         /* 리스트 및 카드 스타일 */
-        .swiper { width: 100%; padding-bottom: 20px; }
-        .card { background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; }
-        .item { display: flex; justify-content: space-between; align-items: center; padding: 18px 15px; border-bottom: 1px solid #f1f5f9; }
+        .swiper { width: 100%; padding-bottom: 10px; }
+        .card { background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #f1f5f9; }
+        .item { display: flex; justify-content: space-between; align-items: center; padding: 16px 15px; border-bottom: 1px solid #f1f5f9; }
         .item:last-child { border-bottom: none; }
         
-        .info { display: flex; flex-direction: column; gap: 4px; }
+        .info { display: flex; flex-direction: column; gap: 3px; }
         .name { font-weight: bold; font-size: 15px; color: #1e293b; }
         .sub-info { font-size: 12px; color: #64748b; }
-        .sector-stats { font-size: 11px; color: #94a3b8; margin-top: 2px; } /* 업종 상세 통계 */
+        .sector-stats { font-size: 11px; color: #94a3b8; margin-top: 1px; }
         
         .rate-box { text-align: right; }
         .rate { font-size: 17px; font-weight: 800; }
-        .change { font-size: 11px; font-weight: 500; }
+        .change { font-size: 11px; }
 
         .상승 { color: var(--up-color); }
         .하락 { color: var(--down-color); }
         .보합 { color: #64748b; }
 
         /* 네비게이션 버튼 */
-        .nav-btns { display: flex; justify-content: center; gap: 10px; margin-top: 20px; margin-bottom: 30px; }
-        .nav-btn { background: white; border: 1px solid #e2e8f0; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-size: 13px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .nav-btn:active { background: #f1f5f9; }
+        .nav-btns { display: flex; justify-content: center; gap: 8px; margin-top: 15px; margin-bottom: 20px; }
+        .nav-btn { background: white; border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: bold; color: #475569; }
 
         /* 하단 링크 버튼 */
-        .footer-link { padding: 20px; text-align: center; margin-bottom: 40px; }
-        .btn-link { display: block; background: var(--primary-color); color: white; text-decoration: none; padding: 15px; border-radius: 10px; font-weight: bold; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3); }
+        .footer-link { padding: 10px 15px 40px 15px; text-align: center; }
+        .btn-link { display: block; background: var(--primary-color); color: white; text-decoration: none; padding: 14px; border-radius: 10px; font-weight: bold; font-size: 15px; }
 
-        #loading { text-align: center; padding: 100px 20px; font-weight: bold; color: #64748b; }
+        #loading { text-align: center; padding: 80px 20px; font-weight: bold; color: #94a3b8; }
     </style>
 </head>
 <body>
 
-    <div class="tab-nav">
-        <div class="tab-item active" data-target="stock-view">실시간 인기종목</div>
-        <div class="tab-item" data-target="sector-view">업종별 시세</div>
-    </div>
+    <div class="main-wrapper">
+        <div class="tab-nav">
+            <div class="tab-item active" data-target="stock-view">실시간 인기종목</div>
+            <div class="tab-item" data-target="sector-view">업종별 시세</div>
+        </div>
 
-    <div id="stock-view" class="view-container active">
-        <div class="swiper" id="stock-swiper">
-            <div class="swiper-wrapper" id="stock-wrapper">
-                <div id="loading">데이터를 로딩 중입니다...</div>
-            </div>
-            <div class="nav-btns">
-                <button class="nav-btn" id="stock-prev"><i class="fa-solid fa-chevron-left"></i> 이전</button>
-                <button class="nav-btn" id="stock-next">다음 <i class="fa-solid fa-chevron-right"></i></button>
+        <div id="stock-view" class="view-container active">
+            <div class="swiper" id="stock-swiper">
+                <div class="swiper-wrapper" id="stock-wrapper">
+                    <div id="loading">데이터 로딩 중...</div>
+                </div>
+                <div class="nav-btns">
+                    <button class="nav-btn" id="stock-prev"><i class="fa-solid fa-chevron-left"></i> 이전</button>
+                    <button class="nav-btn" id="stock-next">다음 <i class="fa-solid fa-chevron-right"></i></button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div id="sector-view" class="view-container">
-        <div class="swiper" id="sector-swiper">
-            <div class="swiper-wrapper" id="sector-wrapper">
-                <div id="loading">데이터를 로딩 중입니다...</div>
-            </div>
-            <div class="nav-btns">
-                <button class="nav-btn" id="sector-prev">등락 상위/하위 전환</button>
+        <div id="sector-view" class="view-container">
+            <div class="swiper" id="sector-swiper">
+                <div class="swiper-wrapper" id="sector-wrapper">
+                    <div id="loading">데이터 로딩 중...</div>
+                </div>
+                <div class="nav-btns">
+                    <button class="nav-btn" id="sector-prev">상위/하위 전환</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="footer-link">
-        <a href="https://www.iamchart.co.kr" class="btn-link">아임차트M 예상 고저가 확인</a>
+        <div class="footer-link">
+            <a href="https://www.iamchart.co.kr" class="btn-link">아임차트M 예상 고저가 확인</a>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script>
-        // 새로 주신 웹 앱 URL 반영
         const GAS_URL = "https://script.google.com/macros/s/AKfycbxQTP2WpINbKU3cPu2j38V0s1-B24-PsJhU5jfvMw0onDjDa_KCEFu19C5UM-ucA85UAg/exec";
         let stockSwiper, sectorSwiper;
 
-        // 탭 전환 이벤트 리스너
         document.querySelectorAll('.tab-item').forEach(tab => {
             tab.addEventListener('click', () => {
                 document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
                 document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
-                
                 tab.classList.add('active');
                 document.getElementById(tab.dataset.target).classList.add('active');
-                
-                // 탭 전환 시 스와이퍼 레이아웃 재계산
                 if(stockSwiper) stockSwiper.update();
                 if(sectorSwiper) sectorSwiper.update();
             });
@@ -111,82 +125,52 @@
                     fetch(`${GAS_URL}?type=stock`),
                     fetch(`${GAS_URL}?type=sector`)
                 ]);
-                const stockData = await resStock.json();
-                const sectorData = await resSector.json();
+                const sData = await resStock.json();
+                const vData = await resSector.json();
 
-                if (stockData.error || sectorData.error) throw new Error("API 응답 오류");
+                renderStock(sData.data);
+                renderSector(vData.data, vData.stats_list);
 
-                renderStock(stockData.data);
-                renderSector(sectorData.data, sectorData.stats_list);
-
-                // 스와이퍼 초기화 (무한 루프)
-                stockSwiper = new Swiper('#stock-swiper', { 
-                    loop: true, 
-                    navigation: { nextEl: '#stock-next', prevEl: '#stock-prev' } 
-                });
-                sectorSwiper = new Swiper('#sector-swiper', { 
-                    loop: true, 
-                    navigation: { nextEl: '#sector-prev' } 
-                });
+                stockSwiper = new Swiper('#stock-swiper', { loop: true, navigation: { nextEl: '#stock-next', prevEl: '#stock-prev' } });
+                sectorSwiper = new Swiper('#sector-swiper', { loop: true, navigation: { nextEl: '#sector-prev' } });
 
             } catch (err) {
-                console.error(err);
-                document.querySelectorAll('#loading').forEach(el => el.innerHTML = "데이터 연결 실패. 배포 설정 및 URL을 확인하세요.");
+                document.querySelectorAll('#loading').forEach(el => el.innerHTML = "연결 실패");
             }
         }
 
-        // 인기 종목 렌더링 (5개씩 슬라이드 생성)
         function renderStock(data) {
             const wrapper = document.getElementById('stock-wrapper');
             wrapper.innerHTML = '';
             for (let i = 0; i < data.length; i += 5) {
                 const chunk = data.slice(i, i + 5);
-                let slideHtml = '<div class="swiper-slide"><div class="card">';
+                let html = '<div class="swiper-slide"><div class="card">';
                 chunk.forEach(item => {
-                    slideHtml += `
-                        <div class="item">
-                            <div class="info">
-                                <span class="name">${item.rank}. ${item.name}</span>
-                                <span class="sub-info">${item.price}원 | 거래량 ${item.volume}</span>
-                            </div>
-                            <div class="rate-box ${item.status}">
-                                <div class="rate">${item.rate}</div>
-                                <div class="change">${item.change}</div>
-                            </div>
-                        </div>`;
+                    html += `<div class="item">
+                        <div class="info"><span class="name">${item.rank}. ${item.name}</span><span class="sub-info">${item.price}원 | ${item.volume}</span></div>
+                        <div class="rate-box ${item.status}"><div class="rate">${item.rate}</div><div class="change">${item.change}</div></div>
+                    </div>`;
                 });
-                slideHtml += '</div></div>';
-                wrapper.innerHTML += slideHtml;
+                wrapper.innerHTML += html + '</div></div>';
             }
         }
 
-        // 업종 시세 렌더링 (상위/하위 슬라이드 구분 및 상세통계 매칭)
         function renderSector(data, stats) {
             const wrapper = document.getElementById('sector-wrapper');
             wrapper.innerHTML = '';
-            
-            // 상위(1~5행 데이터), 하위(6~10행 데이터)
-            const pages = [
-                { title: "📈 업종 등락 상위", items: data.slice(0, 5), stats: stats.slice(0, 5) },
-                { title: "📉 업종 등락 하위", items: data.slice(5, 10), stats: stats.slice(5, 10) }
+            const groups = [
+                { title: "📈 업종 등락 상위", d: data.slice(0, 5), s: stats.slice(0, 5) },
+                { title: "📉 업종 등락 하위", d: data.slice(5, 10), s: stats.slice(5, 10) }
             ];
-
-            pages.forEach(p => {
-                let slideHtml = `<div class="swiper-slide"><h4 style="margin: 10px 5px;">${p.title}</h4><div class="card">`;
-                p.items.forEach((item, idx) => {
-                    slideHtml += `
-                        <div class="item">
-                            <div class="info">
-                                <span class="name">${item.name}</span>
-                                <span class="sector-stats">${p.stats[idx] || ""}</span>
-                            </div>
-                            <div class="rate-box ${item.status}">
-                                <div class="rate">${item.rate}</div>
-                            </div>
-                        </div>`;
+            groups.forEach(g => {
+                let html = `<div class="swiper-slide"><h4 style="margin: 5px 10px;">${g.title}</h4><div class="card">`;
+                g.d.forEach((item, idx) => {
+                    html += `<div class="item">
+                        <div class="info"><span class="name">${item.name}</span><span class="sector-stats">${g.s[idx] || ""}</span></div>
+                        <div class="rate-box ${item.status}"><div class="rate">${item.rate}</div></div>
+                    </div>`;
                 });
-                slideHtml += '</div></div>';
-                wrapper.innerHTML += slideHtml;
+                wrapper.innerHTML += html + '</div></div>';
             });
         }
 
