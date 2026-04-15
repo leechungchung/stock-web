@@ -88,17 +88,11 @@
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbxQTP2WpINbKU3cPu2j38V0s1-B24-PsJhU5jfvMw0onDjDa_KCEFu19C5UM-ucA85UAg/exec";
         let stockSwiper, sectorSwiper;
-        let currentStockIndex = 0;
-        let currentSectorIndex = 0;
 
+        // 1. 데이터 로드 및 렌더링
         async function fetchData() {
             const btn = document.getElementById('manual-refresh');
             const containers = document.querySelectorAll('.view-container');
-            
-            // 데이터 갱신 전 현재 인덱스 저장
-            if (stockSwiper) currentStockIndex = stockSwiper.realIndex;
-            if (sectorSwiper) currentSectorIndex = sectorSwiper.realIndex;
-
             btn.classList.add('rotating');
             containers.forEach(c => c.classList.add('refreshing'));
 
@@ -108,19 +102,8 @@
                 ]);
                 const sData = await resStock.json();
                 const vData = await resSector.json();
-                
                 renderStock(sData.data);
                 renderSector(vData.data, vData.stats_list);
-
-                // 렌더링 후 기존 위치로 복구
-                if (stockSwiper) {
-                    stockSwiper.slideToLoop(currentStockIndex, 0);
-                    updateDots(stockSwiper, 'stock-dots'); // 강제 도트 업데이트
-                }
-                if (sectorSwiper) {
-                    sectorSwiper.slideToLoop(currentSectorIndex, 0);
-                    updateDots(sectorSwiper, 'sector-dots'); // 강제 도트 업데이트
-                }
             } finally {
                 setTimeout(() => {
                     btn.classList.remove('rotating');
@@ -145,7 +128,7 @@
                 });
                 wrapper.innerHTML += html + '</div>';
             }
-            if(stockSwiper) stockSwiper.update();
+            if(stockSwiper) { stockSwiper.update(); }
         }
 
         function renderSector(data, stats) {
@@ -165,9 +148,10 @@
                 });
                 wrapper.innerHTML += html + '</div>';
             });
-            if(sectorSwiper) sectorSwiper.update();
+            if(sectorSwiper) { sectorSwiper.update(); }
         }
 
+        // 2. 도트 업데이트 함수 (loop 완벽 대응)
         function updateDots(swiper, containerId) {
             const dots = document.querySelectorAll(`#${containerId} .dot`);
             const activeIndex = swiper.realIndex; 
@@ -187,6 +171,7 @@
             }
         }
 
+        // 3. 초기화 로직 (URL 파라미터 감지 포함)
         async function init() {
             await fetchData();
 
@@ -195,10 +180,7 @@
                 navigation: { nextEl: '#stock-next', prevEl: '#stock-prev' },
                 on: {
                     init: function() { createDots(this, 'stock-dots', 6); },
-                    slideChange: function() { 
-                        updateDots(this, 'stock-dots');
-                        currentStockIndex = this.realIndex;
-                    }
+                    slideChange: function() { updateDots(this, 'stock-dots'); }
                 }
             });
 
@@ -207,28 +189,25 @@
                 navigation: { nextEl: '#sector-next', prevEl: '#sector-prev' },
                 on: {
                     init: function() { createDots(this, 'sector-dots', 2); },
-                    slideChange: function() { 
-                        updateDots(this, 'sector-dots');
-                        currentSectorIndex = this.realIndex;
-                    }
+                    slideChange: function() { updateDots(this, 'sector-dots'); }
                 }
             });
 
-            document.querySelectorAll('.tab-item').forEach(tab => {
+            // 탭 로직 정의
+            const tabs = document.querySelectorAll('.tab-item');
+            tabs.forEach(tab => {
                 tab.onclick = () => {
                     document.querySelectorAll('.tab-item, .view-container').forEach(el => el.classList.remove('active'));
                     tab.classList.add('active');
-                    document.getElementById(tab.dataset.target).classList.add('active');
-                    if(tab.dataset.target === 'stock-view') {
-                        stockSwiper.update();
-                        updateDots(stockSwiper, 'stock-dots');
-                    } else {
-                        sectorSwiper.update();
-                        updateDots(sectorSwiper, 'sector-dots');
-                    }
+                    const target = document.getElementById(tab.dataset.target);
+                    target.classList.add('active');
+                    // 탭 전환 시 스와이퍼 갱신
+                    if(tab.dataset.target === 'stock-view') stockSwiper.update();
+                    else sectorSwiper.update();
                 };
             });
 
+            // URL 파라미터 체크 및 강제 탭 전환
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('tab') === 'sector') {
                 const sectorTab = document.querySelector('.tab-item[data-target="sector-view"]');
