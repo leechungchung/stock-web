@@ -89,8 +89,32 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbxQTP2WpINbKU3cPu2j38V0s1-B24-PsJhU5jfvMw0onDjDa_KCEFu19C5UM-ucA85UAg/exec";
         let stockSwiper, sectorSwiper;
 
-        // 1. 데이터 로드 및 렌더링
-        async function fetchData() {
+        // Swiper 생성 함수 통합
+        function initSwipers() {
+            // 기존 스와이퍼가 있다면 파괴하여 메모리 및 인덱스 꼬임 방지
+            if (stockSwiper) stockSwiper.destroy(true, true);
+            if (sectorSwiper) sectorSwiper.destroy(true, true);
+
+            stockSwiper = new Swiper('#stock-swiper', {
+                loop: true,
+                navigation: { nextEl: '#stock-next', prevEl: '#stock-prev' },
+                on: {
+                    init: function() { renderDots(this, 'stock-dots', 6); },
+                    slideChange: function() { syncDots(this, 'stock-dots'); }
+                }
+            });
+
+            sectorSwiper = new Swiper('#sector-swiper', {
+                loop: true,
+                navigation: { nextEl: '#sector-next', prevEl: '#sector-prev' },
+                on: {
+                    init: function() { renderDots(this, 'sector-dots', 2); },
+                    slideChange: function() { syncDots(this, 'sector-dots'); }
+                }
+            });
+        }
+
+        async function refreshData() {
             const btn = document.getElementById('manual-refresh');
             const containers = document.querySelectorAll('.view-container');
             btn.classList.add('rotating');
@@ -102,8 +126,14 @@
                 ]);
                 const sData = await resStock.json();
                 const vData = await resSector.json();
-                renderStock(sData.data);
-                renderSector(vData.data, vData.stats_list);
+                
+                // HTML 렌더링
+                renderStockHTML(sData.data);
+                renderSectorHTML(vData.data, vData.stats_list);
+                
+                // 렌더링 후 스와이퍼 재설정 (중요!)
+                initSwipers();
+                
             } finally {
                 setTimeout(() => {
                     btn.classList.remove('rotating');
@@ -112,7 +142,7 @@
             }
         }
 
-        function renderStock(data) {
+        function renderStockHTML(data) {
             const wrapper = document.getElementById('stock-wrapper');
             wrapper.innerHTML = '';
             for (let i = 0; i < 30; i += 5) {
@@ -128,10 +158,9 @@
                 });
                 wrapper.innerHTML += html + '</div>';
             }
-            if(stockSwiper) { stockSwiper.update(); }
         }
 
-        function renderSector(data, stats) {
+        function renderSectorHTML(data, stats) {
             const wrapper = document.getElementById('sector-wrapper');
             wrapper.innerHTML = '';
             const groups = [
@@ -148,19 +177,9 @@
                 });
                 wrapper.innerHTML += html + '</div>';
             });
-            if(sectorSwiper) { sectorSwiper.update(); }
         }
 
-        // 2. 도트 업데이트 함수 (loop 완벽 대응)
-        function updateDots(swiper, containerId) {
-            const dots = document.querySelectorAll(`#${containerId} .dot`);
-            const activeIndex = swiper.realIndex; 
-            dots.forEach((dot, idx) => {
-                dot.classList.toggle('active', idx === activeIndex);
-            });
-        }
-
-        function createDots(swiper, containerId, total) {
+        function renderDots(swiper, containerId, total) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
             for (let i = 0; i < total; i++) {
@@ -171,43 +190,28 @@
             }
         }
 
-        // 3. 초기화 로직 (URL 파라미터 감지 포함)
-        async function init() {
-            await fetchData();
-
-            stockSwiper = new Swiper('#stock-swiper', {
-                loop: true,
-                navigation: { nextEl: '#stock-next', prevEl: '#stock-prev' },
-                on: {
-                    init: function() { createDots(this, 'stock-dots', 6); },
-                    slideChange: function() { updateDots(this, 'stock-dots'); }
-                }
+        function syncDots(swiper, containerId) {
+            const dots = document.querySelectorAll(`#${containerId} .dot`);
+            const realIdx = swiper.realIndex; 
+            dots.forEach((dot, idx) => {
+                dot.classList.toggle('active', idx === realIdx);
             });
+        }
 
-            sectorSwiper = new Swiper('#sector-swiper', {
-                loop: true,
-                navigation: { nextEl: '#sector-next', prevEl: '#sector-prev' },
-                on: {
-                    init: function() { createDots(this, 'sector-dots', 2); },
-                    slideChange: function() { updateDots(this, 'sector-dots'); }
-                }
-            });
+        async function startApp() {
+            await refreshData();
 
-            // 탭 로직 정의
-            const tabs = document.querySelectorAll('.tab-item');
-            tabs.forEach(tab => {
+            // 탭 클릭 로직
+            document.querySelectorAll('.tab-item').forEach(tab => {
                 tab.onclick = () => {
                     document.querySelectorAll('.tab-item, .view-container').forEach(el => el.classList.remove('active'));
                     tab.classList.add('active');
-                    const target = document.getElementById(tab.dataset.target);
-                    target.classList.add('active');
-                    // 탭 전환 시 스와이퍼 갱신
-                    if(tab.dataset.target === 'stock-view') stockSwiper.update();
-                    else sectorSwiper.update();
+                    document.getElementById(tab.dataset.target).classList.add('active');
+                    stockSwiper.update(); sectorSwiper.update();
                 };
             });
 
-            // URL 파라미터 체크 및 강제 탭 전환
+            // URL 파라미터 체크 (가장 마지막에 실행)
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('tab') === 'sector') {
                 const sectorTab = document.querySelector('.tab-item[data-target="sector-view"]');
@@ -215,8 +219,8 @@
             }
         }
 
-        document.getElementById('manual-refresh').onclick = fetchData;
-        init();
+        document.getElementById('manual-refresh').onclick = refreshData;
+        startApp();
     </script>
 </body>
 </html>
