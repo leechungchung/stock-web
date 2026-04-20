@@ -3,42 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ImChart</title>
+    <title>ImChart Financial</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-        :root { --up: #f04452; --down: #3182f6; --bg: #ffffff; --gray-bg: #f2f4f6; --text-main: #191f28; --text-sub: #8b95a1; --im-orange: #ff8c00; }
-        body { font-family: 'Pretendard', sans-serif; background-color: var(--gray-bg); margin: 0; padding: 0; display: flex; justify-content: center; color: var(--text-main); letter-spacing: -0.3px; -webkit-font-smoothing: antialiased; }
-        .main-wrapper { width: 100%; max-width: 500px; min-height: 100vh; background-color: var(--bg); display: flex; flex-direction: column; }
+        :root { 
+            --up: #f04452; --down: #3182f6; --bg: #f2f4f6; --card-bg: #ffffff; 
+            --text-main: #191f28; --text-sub: #8b95a1; --im-orange: #ff8c00;
+            --kospi: #3182f6; --kosdaq: #00c73c;
+        }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--bg); margin: 0; display: flex; justify-content: center; color: var(--text-main); min-height: 100vh; }
+        .main-wrapper { width: 100%; max-width: 500px; background-color: var(--card-bg); display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.05); min-height: 100vh; }
+        
+        /* 헤더 & 탭 */
         .header-nav { display: flex; justify-content: space-between; align-items: center; padding: 0 20px; background: white; border-bottom: 1px solid #f2f4f6; position: sticky; top: 0; z-index: 1000; height: 60px; }
-        .tab-nav { display: flex; gap: 20px; height: 100%; }
-        .tab-item { font-size: 16px; font-weight: 600; cursor: pointer; color: #adb5bd; display: flex; align-items: center; position: relative; }
+        .tab-nav { display: flex; gap: 15px; height: 100%; overflow-x: auto; scrollbar-width: none; }
+        .tab-item { font-size: 15px; font-weight: 600; cursor: pointer; color: #adb5bd; display: flex; align-items: center; position: relative; white-space: nowrap; }
         .tab-item.active { color: var(--text-main); }
         .tab-item.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--text-main); border-radius: 2px; }
-        .refresh-btn { background: #f2f4f6; border: none; color: #4e5968; cursor: pointer; font-size: 16px; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .refresh-btn { background: #f2f4f6; border: none; color: #4e5968; cursor: pointer; font-size: 16px; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
         .refresh-btn.rotating i { animation: rotate 0.6s ease-in-out; }
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .view-container { display: none; padding: 10px 0; transition: opacity 0.2s; }
+
+        /* 컨텐츠 영역 */
+        .view-container { display: none; flex: 1; }
         .view-container.active { display: block; }
-        .refreshing { opacity: 0.4; }
-        .item { display: flex; justify-content: space-between; align-items: center; padding: 22px 20px; border-bottom: 1px solid #f9fafb; }
+        .item { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #f9fafb; }
         .info-area { display: flex; align-items: center; gap: 14px; }
         .rank-txt { font-size: 15px; font-weight: 600; color: var(--text-sub); width: 18px; text-align: center; }
-        .name { font-size: 16px; font-weight: 500; color: var(--text-main); }
-        .right-area { text-align: right; display: flex; flex-direction: column; gap: 4px; }
-        .price-txt { font-size: 15px; font-weight: 600; color: var(--text-main); }
-        .status-txt { font-size: 13px; font-weight: 500; display: flex; gap: 6px; justify-content: flex-end; }
+        .name { font-size: 16px; font-weight: 600; color: var(--text-main); }
+        .right-area { text-align: right; }
+        .price-txt { font-size: 15px; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 2px; }
+        .status-txt { font-size: 13px; font-weight: 500; display: flex; gap: 4px; justify-content: flex-end; }
         .상승 { color: var(--up); } .하락 { color: var(--down); } .보합 { color: var(--text-sub); }
-        .control-section { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 30px 0; }
+
+        /* 하단 조작 영역 */
+        .control-section { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 40px 0; background: #fafbfc; }
         .swiper-pagination-custom { display: flex; gap: 8px; justify-content: center; height: 10px; }
         .dot { width: 7px; height: 7px; background: #e5e8eb; border-radius: 50%; cursor: pointer; transition: 0.3s; }
         .dot.active { background: #adb5bd; width: 18px; border-radius: 4px; }
-        .nav-btns { display: flex; gap: 10px; }
-        .nav-btn { background: #f2f4f6; border: none; padding: 10px 28px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: #4e5968; }
-        .footer-link { padding: 0 20px 40px; }
-        .btn-link { display: block; background: #191f28; color: white; text-decoration: none; padding: 18px; border-radius: 16px; text-align: center; font-size: 16px; font-weight: 500; }
-        .logo-im { color: var(--im-orange); }
+        .nav-btn { background: white; border: 1px solid #e5e8eb; padding: 10px 30px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: #4e5968; }
+
+        /* 보호예수 캘린더 스타일 */
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; }
+        .cal-title { font-size: 18px; font-weight: 700; cursor: pointer; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); padding: 0 10px; }
+        .day-label { text-align: center; font-size: 12px; color: var(--text-sub); padding-bottom: 10px; }
+        .date-cell { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border-radius: 12px; position: relative; font-size: 14px; font-weight: 500; }
+        .date-cell:hover { background: #f9fafb; }
+        .date-cell.today { color: var(--im-orange); font-weight: 800; }
+        .date-cell.selected { background: var(--text-main); color: white !important; }
+        .has-event::after { content: ''; width: 4px; height: 4px; background: var(--up); border-radius: 50%; position: absolute; bottom: 6px; }
+        .event-list-section { padding: 20px; background: #fafbfc; border-top: 1px solid #f2f4f6; min-height: 200px; }
+        .lockup-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #f2f4f6; text-decoration: none; color: inherit; }
+        .market-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 700; margin-bottom: 4px; display: inline-block; }
+        .tag-kospi { background: #eef4ff; color: var(--kospi); }
+        .tag-kosdaq { background: #effff3; color: var(--kosdaq); }
+
+        /* 푸터 */
+        .footer-link { padding: 20px; background: #fafbfc; border-top: 1px solid #f2f4f6; }
+        .btn-link { display: block; background: #191f28; color: white; text-decoration: none; padding: 18px; border-radius: 16px; text-align: center; font-size: 16px; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -47,6 +72,7 @@
             <div class="tab-nav">
                 <div class="tab-item active" data-target="stock-view">인기종목</div>
                 <div class="tab-item" data-target="sector-view">업종시세</div>
+                <div class="tab-item" data-target="lockup-view">보호예수</div>
             </div>
             <button class="refresh-btn" id="manual-refresh"><i class="fa-solid fa-arrows-rotate"></i></button>
         </div>
@@ -77,51 +103,62 @@
             </div>
         </div>
 
+        <div id="lockup-view" class="view-container">
+            <div class="calendar-header">
+                <button class="nav-btn" style="padding: 10px 15px;" onclick="changeMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="cal-title" id="cal-month-year" onclick="resetToToday()">2026년 04월</div>
+                <button class="nav-btn" style="padding: 10px 15px;" onclick="changeMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            <div class="cal-grid">
+                <div class="day-label">일</div><div class="day-label">월</div><div class="day-label">화</div><div class="day-label">수</div><div class="day-label">목</div><div class="day-label">금</div><div class="day-label">토</div>
+            </div>
+            <div class="cal-grid" id="calendar-body"></div>
+            <div class="event-list-section">
+                <span id="selected-date-txt" style="font-size:14px; font-weight:700; margin-bottom:15px; display:block;">날짜를 선택하세요</span>
+                <div id="event-detail-list"></div>
+            </div>
+        </div>
+
         <div class="footer-link">
-            <a href="https://www.iamchart.co.kr" class="btn-link">아<span class="logo-im">임</span>차트M 에서 추세확인</a>
+            <a href="https://www.iamchart.co.kr" class="btn-link">아<span style="color:var(--im-orange)">임</span>차트M 에서 상세분석</a>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script>
+        // 요청하신 구글 웹앱 URL 적용
         const GAS_URL = "https://script.google.com/macros/s/AKfycbxQTP2WpINbKU3cPu2j38V0s1-B24-PsJhU5jfvMw0onDjDa_KCEFu19C5UM-ucA85UAg/exec";
+        
         let stockSwiper, sectorSwiper;
-        let currentStockIdx = 0;
-        let currentSectorIdx = 0;
+        let lockupData = [];
+        let currentViewDate = new Date();
+        let selectedDateStr = "";
 
         async function fetchData() {
             const btn = document.getElementById('manual-refresh');
-            const containers = document.querySelectorAll('.view-container');
-            
-            // 1. 현재 인덱스 미리 저장
-            if (stockSwiper) currentStockIdx = stockSwiper.realIndex;
-            if (sectorSwiper) currentSectorIdx = sectorSwiper.realIndex;
-
             btn.classList.add('rotating');
-            containers.forEach(c => c.classList.add('refreshing'));
 
             try {
-                const [resStock, resSector] = await Promise.all([
-                    fetch(`${GAS_URL}?type=stock`), fetch(`${GAS_URL}?type=sector`)
+                const [resStock, resSector, resLockup] = await Promise.all([
+                    fetch(`${GAS_URL}?type=stock`),
+                    fetch(`${GAS_URL}?type=sector`),
+                    fetch(`${GAS_URL}?type=lockup`)
                 ]);
+                
                 const sData = await resStock.json();
                 const vData = await resSector.json();
+                const lData = await resLockup.json();
                 
-                // 2. 데이터 렌더링
                 renderStock(sData.data);
                 renderSector(vData.data, vData.stats_list);
-
-                // 3. 스와이퍼 재초기화 (루프 오류 방지의 핵심)
+                lockupData = lData.data;
+                
                 initSwipers();
-
-                // 4. 원래 위치로 복구
-                stockSwiper.slideToLoop(currentStockIdx, 0);
-                sectorSwiper.slideToLoop(currentSectorIdx, 0);
+                renderCalendar();
+            } catch (e) {
+                console.error("데이터 로드 실패:", e);
             } finally {
-                setTimeout(() => {
-                    btn.classList.remove('rotating');
-                    containers.forEach(c => c.classList.remove('refreshing'));
-                }, 500);
+                setTimeout(() => btn.classList.remove('rotating'), 500);
             }
         }
 
@@ -151,11 +188,11 @@
                 { title: "📉 등락 하위 업종", d: data.slice(5, 10), s: stats.slice(5, 10) }
             ];
             groups.forEach(g => {
-                let html = `<div class="swiper-slide"><h4 style="margin: 0 20px 10px; font-size:14px; color:var(--text-sub); font-weight:500;">${g.title}</h4>`;
+                let html = `<div class="swiper-slide"><h4 style="margin: 0 20px 10px; font-size:13px; color:var(--text-sub); font-weight:500;">${g.title}</h4>`;
                 g.d.forEach((item, idx) => {
                     html += `<div class="item">
-                        <div><span class="name">${item.name}</span><span style="font-size:13px; color:var(--text-sub); margin-top:4px; display:block;">${g.s[idx] || ""}</span></div>
-                        <div class="right-area"><span class="rate-big ${item.status}">${item.rate}</span></div>
+                        <div><span class="name">${item.name}</span><span style="font-size:12px; color:var(--text-sub); margin-top:4px; display:block;">${g.s[idx] || ""}</span></div>
+                        <div class="right-area"><span style="font-size:18px; font-weight:600;" class="${item.status}">${item.rate}</span></div>
                     </div>`;
                 });
                 wrapper.innerHTML += html + '</div>';
@@ -163,7 +200,6 @@
         }
 
         function initSwipers() {
-            // 기존 스와이퍼가 있다면 완전히 파괴
             if (stockSwiper) stockSwiper.destroy(true, true);
             if (sectorSwiper) sectorSwiper.destroy(true, true);
 
@@ -202,29 +238,91 @@
             dots.forEach((dot, idx) => dot.classList.toggle('active', idx === swiper.realIndex));
         }
 
-        async function init() {
-            await fetchData();
+        /* 캘린더 로직 */
+        function renderCalendar() {
+            const year = currentViewDate.getFullYear();
+            const month = currentViewDate.getMonth();
+            document.getElementById('cal-month-year').innerText = `${year}년 ${String(month + 1).padStart(2, '0')}월`;
 
-            // 탭 클릭 이벤트
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+            const calBody = document.getElementById('calendar-body');
+            calBody.innerHTML = '';
+
+            for (let i = 0; i < firstDay; i++) calBody.innerHTML += '<div></div>';
+
+            for (let d = 1; d <= lastDate; d++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const hasEvent = lockupData.some(item => item.date === dateStr);
+                const isToday = new Date().toISOString().split('T')[0] === dateStr;
+                
+                const cell = document.createElement('div');
+                cell.className = `date-cell ${hasEvent ? 'has-event' : ''} ${isToday ? 'today' : ''} ${selectedDateStr === dateStr ? 'selected' : ''}`;
+                cell.innerText = d;
+                cell.onclick = () => selectDate(dateStr);
+                calBody.appendChild(cell);
+            }
+            if (selectedDateStr) showEvents(selectedDateStr);
+        }
+
+        function selectDate(dateStr) {
+            selectedDateStr = dateStr;
+            renderCalendar();
+            showEvents(dateStr);
+        }
+
+        function showEvents(dateStr) {
+            const listArea = document.getElementById('event-detail-list');
+            const dayEvents = lockupData.filter(item => item.date === dateStr);
+            document.getElementById('selected-date-txt').innerText = dateStr + " 해제 일정";
+            
+            if (dayEvents.length === 0) {
+                listArea.innerHTML = '<div style="text-align:center; color:#8b95a1; padding:40px 0; font-size:14px;">해당 날짜에 일정이 없습니다.</div>';
+                return;
+            }
+
+            listArea.innerHTML = '';
+            dayEvents.forEach(ev => {
+                const amountFormatted = (ev.amount / 1000).toLocaleString(undefined, {maximumFractionDigits: 0}) + "천 주";
+                const marketTag = ev.market === '코스피' ? 'tag-kospi' : 'tag-kosdaq';
+                
+                listArea.innerHTML += `
+                    <a href="https://finance.naver.com/item/main.naver?code=${ev.code}" target="_blank" class="lockup-card">
+                        <div>
+                            <span class="market-tag ${marketTag}">${ev.market}</span>
+                            <span style="display:block; font-weight:600; font-size:15px;">${ev.name}</span>
+                        </div>
+                        <div style="text-align:right;">
+                            <span style="font-weight:700; color:var(--text-main);">${amountFormatted}</span><br>
+                            <span style="font-size:12px; color:var(--text-sub);">${(ev.ratio * 100).toFixed(2)}%</span>
+                        </div>
+                    </a>`;
+            });
+        }
+
+        function changeMonth(v) {
+            currentViewDate.setMonth(currentViewDate.getMonth() + v);
+            renderCalendar();
+        }
+
+        function resetToToday() {
+            currentViewDate = new Date();
+            const todayStr = new Date().toISOString().split('T')[0];
+            selectDate(todayStr);
+        }
+
+        window.onload = () => {
+            fetchData();
             document.querySelectorAll('.tab-item').forEach(tab => {
                 tab.onclick = () => {
                     document.querySelectorAll('.tab-item, .view-container').forEach(el => el.classList.remove('active'));
                     tab.classList.add('active');
                     document.getElementById(tab.dataset.target).classList.add('active');
-                    stockSwiper.update();
-                    sectorSwiper.update();
                 };
             });
-
-            // URL 파라미터 체크
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('tab') === 'sector') {
-                const sectorTab = document.querySelector('.tab-item[data-target="sector-view"]');
-                if (sectorTab) sectorTab.click();
-            }
-        }
-
+        };
+        
         document.getElementById('manual-refresh').onclick = fetchData;
-        init();
     </script>
 </body>
+</html>
