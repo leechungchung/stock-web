@@ -8,99 +8,103 @@
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
         :root { --toss-blue: #3182f6; --toss-bg: #f2f4f6; --toss-text: #191f28; --toss-sub: #8b95a1; --up: #f04452; --down: #3182f6; }
-        
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Pretendard', sans-serif; background: #fff; margin: 0; color: var(--toss-text); overflow-x: hidden; }
-        .wrapper { max-width: 500px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+        .wrapper { max-width: 500px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; position: relative; }
         
-        /* 헤더 & 탭 */
-        .header { padding: 24px 20px 10px; font-size: 24px; font-weight: 700; background: #fff; }
+        /* 헤더 및 새로고침 */
+        .header-container { display: flex; justify-content: space-between; align-items: center; padding: 24px 20px 10px; }
+        .header { font-size: 24px; font-weight: 700; }
+        .refresh-btn { width: 36px; height: 36px; background: var(--toss-bg); border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.3s; }
+        .refresh-btn:active { transform: rotate(180deg); }
+
+        /* 탭 메뉴 */
         .tabs { display: flex; padding: 0 20px; gap: 24px; border-bottom: 1px solid #f2f4f6; position: sticky; top: 0; background: #fff; z-index: 100; }
         .tab-item { padding: 16px 0; font-size: 16px; font-weight: 600; color: var(--toss-sub); cursor: pointer; position: relative; }
         .tab-item.active { color: var(--toss-text); }
         .tab-item.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--toss-text); border-radius: 2px; }
 
-        /* 캘린더 컨트롤 */
+        /* 캘린더 컨트롤 (1번 해결) */
         .cal-ctrl { display: flex; justify-content: space-between; align-items: center; padding: 24px 20px; }
-        .cal-title { font-size: 20px; font-weight: 700; display: flex; gap: 6px; align-items: center; cursor: pointer; }
+        .cal-title { font-size: 20px; font-weight: 700; display: flex; gap: 8px; align-items: center; }
+        .nav-btn { background: none; border: none; font-size: 18px; color: var(--toss-sub); cursor: pointer; padding: 5px; }
         .today-sq { width: 44px; height: 44px; background: var(--toss-bg); border: none; border-radius: 12px; color: var(--toss-blue); font-weight: 700; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; }
-        .today-sq b { font-size: 16px; line-height: 1; }
 
-        /* 캘린더 그리드 */
+        /* 캘린더/리스트 공통 */
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); padding: 0 10px; }
-        .day-label { color: var(--toss-sub); font-size: 12px; padding: 10px 0; text-align: center; font-weight: 500; }
-        .date-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-weight: 500; cursor: pointer; border-radius: 50%; position: relative; font-size: 15px; }
+        .day-label { color: var(--toss-sub); font-size: 12px; padding: 10px 0; text-align: center; }
+        .date-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-weight: 500; cursor: pointer; border-radius: 50%; position: relative; }
         .date-cell.today { color: var(--toss-blue); font-weight: 800; }
-        .date-cell.selected { background: var(--toss-text); color: #fff; font-weight: 600; }
+        .date-cell.selected { background: var(--toss-text); color: #fff; }
         .dot::after { content: ''; width: 4px; height: 4px; background: var(--up); border-radius: 50%; position: absolute; bottom: 6px; }
 
-        /* 하단 리스트 영역 */
-        .list-section { background: var(--toss-bg); padding: 24px 20px; flex: 1; border-radius: 32px 32px 0 0; margin-top: 20px; min-height: 300px; }
-        .list-title { font-size: 17px; font-weight: 700; margin-bottom: 16px; color: var(--toss-text); }
-        .card { background: #fff; padding: 20px; border-radius: 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: inherit; border: none; width: 100%; text-align: left; }
-        .card:active { transform: scale(0.98); background: #f9f9f9; }
-        .card b { font-size: 17px; display: block; margin-bottom: 4px; }
-        .card span { font-size: 13px; color: var(--toss-sub); font-weight: 500; }
-        .price-text { text-align: right; }
-        .price-text b { color: var(--up); }
-
-        /* 안내 문구 */
-        .empty-msg { text-align: center; padding: 60px 0; color: var(--toss-sub); font-size: 15px; }
+        .list-section { background: var(--toss-bg); padding: 24px 20px; flex: 1; border-radius: 32px 32px 0 0; margin-top: 20px; }
+        .card { background: #fff; padding: 18px; border-radius: 18px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card b { font-size: 16px; display: block; }
+        .card span { font-size: 12px; color: var(--toss-sub); }
+        .rank-txt { font-weight: 700; color: var(--toss-blue); margin-right: 10px; }
+        .price-up { color: var(--up); font-weight: 700; }
+        .price-down { color: var(--down); font-weight: 700; }
     </style>
 </head>
 <body>
     <div class="wrapper">
-        <div class="header">자산</div>
+        <div class="header-container">
+            <div class="header">자산</div>
+            <button class="refresh-btn" onclick="location.reload()"><i class="fas fa-sync-alt"></i></button>
+        </div>
+        
         <div class="tabs">
-            <div class="tab-item active" id="tab-lockup">보호예수</div>
-            <div class="tab-item" id="tab-stock">인기종목</div>
-            <div class="tab-item" id="tab-sector">업종시세</div>
+            <div class="tab-item active" onclick="switchTab('lockup')">보호예수</div>
+            <div class="tab-item" onclick="switchTab('stock')">인기종목</div>
+            <div class="tab-item" onclick="switchTab('sector')">업종시세</div>
         </div>
 
-        <div id="content-area">
+        <div id="view-lockup">
             <div class="cal-ctrl">
-                <div class="cal-title" onclick="goToday()">
-                    <span id="y-label">2026년</span>
-                    <span id="m-label">4월</span>
-                    <i class="fas fa-chevron-right" style="font-size: 14px; color: #ccc;"></i>
-                </div>
-                <button class="today-sq" onclick="goToday()">
-                    <b id="today-num">21</b>오늘
-                </button>
-            </div>
-            
-            <div class="cal-grid">
-                <div class="day-label">일</div><div class="day-label">월</div><div class="day-label">화</div><div class="day-label">수</div><div class="day-label">목</div><div class="day-label">금</div><div class="day-label">토</div>
+                <button class="nav-btn" onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                <div class="cal-title"><span id="y-label"></span> <span id="m-label"></span></div>
+                <button class="nav-btn" onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
             </div>
             <div class="cal-grid" id="cal-body"></div>
-
             <div class="list-section">
-                <div class="list-title" id="list-date-txt">해제 일정</div>
                 <div id="item-list"></div>
             </div>
+        </div>
+
+        <div id="view-other" style="display:none;" class="list-section">
+            <div id="other-list"></div>
         </div>
     </div>
 
     <script>
-        // [필수 수정] 대리님의 GAS 배포 URL을 여기에 넣으세요
-        const GAS_URL = "여기에_GAS_배포_URL_입력"; 
-        
-        let lockupData = [], curDate = new Date(), selDateStr = "";
+        const GAS_URL = "여기에_실제_배포_URL_입력"; // image_85b243.png의 URL
+        let lockupData = [], curDate = new Date(), selDateStr = new Date().toISOString().split('T')[0];
 
-        async function init() {
-            // 오늘 날짜 표시
-            const today = new Date();
-            document.getElementById('today-num').innerText = today.getDate();
-            selDateStr = today.toISOString().split('T')[0];
-            
+        async function fetchData(type) {
             try {
-                const res = await fetch(`${GAS_URL}?type=lockup`);
-                const json = await res.json();
-                lockupData = json.data;
+                const res = await fetch(`${GAS_URL}?type=${type}`);
+                return await res.json();
+            } catch(e) { return { data: [] }; }
+        }
+
+        async function switchTab(type) {
+            document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if(type === 'lockup') {
+                document.getElementById('view-lockup').style.display = 'block';
+                document.getElementById('view-other').style.display = 'none';
+                if(lockupData.length === 0) {
+                    const json = await fetchData('lockup');
+                    lockupData = json.data;
+                }
                 renderCalendar();
-                showList(selDateStr);
-            } catch(e) {
-                document.getElementById('item-list').innerHTML = '<div class="empty-msg">데이터를 불러오지 못했습니다.</div>';
+            } else {
+                document.getElementById('view-lockup').style.display = 'none';
+                document.getElementById('view-other').style.display = 'block';
+                const json = await fetchData(type);
+                renderOtherList(json.data, type);
             }
         }
 
@@ -108,71 +112,49 @@
             const y = curDate.getFullYear(), m = curDate.getMonth();
             document.getElementById('y-label').innerText = `${y}년`;
             document.getElementById('m-label').innerText = `${m+1}월`;
-            
             const body = document.getElementById('cal-body');
-            body.innerHTML = '';
+            body.innerHTML = '<div class="day-label">일</div><div class="day-label">월</div><div class="day-label">화</div><div class="day-label">수</div><div class="day-label">목</div><div class="day-label">금</div><div class="day-label">토</div>';
             
             const firstDay = new Date(y, m, 1).getDay();
             const lastDate = new Date(y, m+1, 0).getDate();
-            
-            // 빈 칸
             for(let i=0; i<firstDay; i++) body.innerHTML += '<div></div>';
-            
-            // 날짜 채우기
             for(let d=1; d<=lastDate; d++) {
                 const dStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                 const hasEvent = lockupData.some(ev => ev.date === dStr);
-                const isToday = new Date().toISOString().split('T')[0] === dStr;
-                const isSelected = selDateStr === dStr;
-                
                 const cell = document.createElement('div');
-                cell.className = `date-cell ${hasEvent ? 'dot' : ''} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}`;
+                cell.className = `date-cell ${hasEvent ? 'dot' : ''} ${selDateStr === dStr ? 'selected' : ''}`;
                 cell.innerText = d;
-                cell.onclick = () => {
-                    selDateStr = dStr;
-                    renderCalendar();
-                    showList(dStr);
-                };
+                cell.onclick = () => { selDateStr = dStr; renderCalendar(); renderLockupList(); };
                 body.appendChild(cell);
             }
+            renderLockupList();
         }
 
-        function showList(dateStr) {
-            const items = lockupData.filter(ev => ev.date === dateStr);
+        function renderLockupList() {
+            const items = lockupData.filter(ev => ev.date === selDateStr);
             const box = document.getElementById('item-list');
-            const title = document.getElementById('list-date-txt');
-            
-            const [y, m, d] = dateStr.split('-');
-            title.innerText = `${parseInt(m)}월 ${parseInt(d)}일 해제 일정`;
-            
-            if(items.length === 0) {
-                box.innerHTML = '<div class="empty-msg">잡혀있는 일정이 없어요</div>';
-                return;
-            }
-            
-            box.innerHTML = items.map(item => `
+            if(items.length === 0) { box.innerHTML = '<div style="text-align:center; color:#8b95a1; padding:40px 0;">일정이 없어요</div>'; return; }
+            box.innerHTML = items.map(item => `<div class="card"><div><b>${item.name}</b><span>${item.market}</span></div><div style="text-align:right;"><b class="price-up">${(item.amount/1000).toLocaleString()}k</b><span>${(item.ratio*100).toFixed(1)}%</span></div></div>`).join('');
+        }
+
+        function renderOtherList(data, type) {
+            const box = document.getElementById('other-list');
+            box.innerHTML = data.map(item => `
                 <div class="card">
-                    <div>
-                        <b>${item.name}</b>
-                        <span>${item.market} · ${item.code}</span>
+                    <div style="display:flex; align-items:center;">
+                        ${item.rank ? `<span class="rank-txt">${item.rank}</span>` : ''}
+                        <div><b>${item.name}</b><span>${item.status || ''}</span></div>
                     </div>
-                    <div class="price-text">
-                        <b>${(item.amount/1000).toLocaleString()}k 주</b>
-                        <span>${(item.ratio*100).toFixed(2)}%</span>
+                    <div style="text-align:right;">
+                        <b class="${item.rate.includes('-') ? 'price-down' : 'price-up'}">${item.rate}</b>
+                        <span>${item.price || ''}</span>
                     </div>
                 </div>
             `).join('');
         }
 
-        function goToday() {
-            curDate = new Date();
-            selDateStr = curDate.toISOString().split('T')[0];
-            renderCalendar();
-            showList(selDateStr);
-        }
-
-        // 초기 실행
-        window.onload = init;
+        function changeMonth(val) { curDate.setMonth(curDate.getMonth() + val); renderCalendar(); }
+        window.onload = () => switchTab('lockup');
     </script>
 </body>
 </html>
