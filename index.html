@@ -15,8 +15,7 @@
         /* 헤더 */
         .header-container { display: flex; justify-content: space-between; align-items: center; padding: 24px 20px 10px; }
         .header { font-size: 24px; font-weight: 700; }
-        .top-btns { display: flex; gap: 12px; }
-        .icon-btn { width: 36px; height: 36px; background: var(--toss-bg); border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--toss-text); }
+        .icon-btn { width: 36px; height: 36px; background: var(--toss-bg); border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
         /* 탭 */
         .tabs { display: flex; padding: 0 20px; gap: 24px; border-bottom: 1px solid #f2f4f6; position: sticky; top: 0; background: #fff; z-index: 100; }
@@ -24,37 +23,38 @@
         .tab-item.active { color: var(--toss-text); }
         .tab-item.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--toss-text); border-radius: 2px; }
 
-        /* 캘린더 컨트롤 (1번/3번 해결) */
-        .cal-ctrl { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: #fff; }
-        .cal-title-group { display: flex; align-items: center; gap: 4px; }
-        .select-wrap { position: relative; display: inline-block; }
-        .cal-select { font-size: 19px; font-weight: 700; border: none; background: var(--toss-bg); padding: 4px 8px; border-radius: 8px; cursor: pointer; appearance: none; color: var(--toss-text); }
-        .today-btn { padding: 6px 12px; background: var(--toss-blue); color: #fff; border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; }
+        /* 캘린더 컨트롤 (좌우버튼 부활 및 셀렉트 통합) */
+        .cal-ctrl { display: flex; justify-content: space-between; align-items: center; padding: 20px; }
+        .cal-nav { display: flex; align-items: center; gap: 12px; }
+        .nav-btn { background: none; border: none; font-size: 18px; color: var(--toss-sub); cursor: pointer; padding: 4px; }
+        .cal-select-box { font-size: 18px; font-weight: 700; border: none; background: none; cursor: pointer; color: var(--toss-text); }
+        .today-btn { padding: 6px 12px; background: var(--toss-bg); color: var(--toss-blue); border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; }
 
-        /* 캘린더 그리드 */
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); padding: 0 10px; margin-bottom: 10px; }
+        /* 캘린더 그리드 (파란 라운드스퀘어 적용) */
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); padding: 0 10px; }
         .day-label { color: var(--toss-sub); font-size: 12px; padding: 10px 0; text-align: center; }
-        .date-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-weight: 500; cursor: pointer; border-radius: 50%; position: relative; font-size: 15px; }
-        .date-cell.today { color: var(--toss-blue); font-weight: 800; background: #e8f3ff; }
-        .date-cell.selected { background: var(--toss-text); color: #fff !important; }
+        .date-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-weight: 500; cursor: pointer; position: relative; font-size: 15px; border-radius: 12px; transition: 0.2s; }
+        
+        /* 2번 요청: 파란 라운드스퀘어 선택 효과 */
+        .date-cell.selected { background: var(--toss-blue) !important; color: #fff !important; font-weight: 700; }
+        .date-cell.today { color: var(--toss-blue); font-weight: 800; }
         .dot::after { content: ''; width: 4px; height: 4px; background: var(--up); border-radius: 50%; position: absolute; bottom: 6px; }
 
-        /* 리스트 영역 */
-        .list-section { background: var(--toss-bg); padding: 24px 20px; flex: 1; border-radius: 32px 32px 0 0; min-height: 400px; }
-        .card { background: #fff; padding: 18px; border-radius: 18px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-        .card b { font-size: 16px; display: block; }
-        .card span { font-size: 12px; color: var(--toss-sub); }
-        .price-up { color: var(--up); font-weight: 700; }
-        .price-down { color: var(--down); font-weight: 700; }
+        /* 리스트 영역 (4번 요청 데이터 포맷 반영) */
+        .list-section { background: var(--toss-bg); padding: 24px 20px; flex: 1; border-radius: 32px 32px 0 0; min-height: 400px; margin-top: 10px; }
+        .list-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--toss-text); padding-left: 4px; }
+        .card { background: #fff; padding: 18px; border-radius: 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+        .card b { font-size: 16px; display: block; margin-bottom: 4px; }
+        .card span { font-size: 12px; color: var(--toss-sub); font-weight: 500; }
+        .info-right { text-align: right; }
+        .price-up { color: var(--up); font-weight: 700; font-size: 15px; }
     </style>
 </head>
 <body>
     <div class="wrapper">
         <div class="header-container">
             <div class="header">자산</div>
-            <div class="top-btns">
-                <button class="icon-btn" onclick="location.reload()"><i class="fas fa-sync-alt"></i></button>
-            </div>
+            <button class="icon-btn" onclick="location.reload()"><i class="fas fa-sync-alt"></i></button>
         </div>
         
         <div class="tabs">
@@ -65,9 +65,10 @@
 
         <div id="view-lockup">
             <div class="cal-ctrl">
-                <div class="cal-title-group">
-                    <select id="select-year" class="cal-select" onchange="handleSelectChange()"></select>
-                    <select id="select-month" class="cal-select" onchange="handleSelectChange()"></select>
+                <div class="cal-nav">
+                    <button class="nav-btn" onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                    <select id="select-month" class="cal-select-box" onchange="handleSelectChange()"></select>
+                    <button class="nav-btn" onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
                 </div>
                 <button class="today-btn" onclick="goToday()">오늘</button>
             </div>
@@ -76,6 +77,7 @@
             </div>
             <div class="cal-grid" id="cal-body"></div>
             <div class="list-section">
+                <div class="list-title" id="sel-date-txt">일정 확인</div>
                 <div id="item-list"></div>
             </div>
         </div>
@@ -86,37 +88,49 @@
     </div>
 
     <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbxQTP2WpINbKU3cPu2j38V0s1-B24-PsJhU5jfvMw0onDjDa_KCEFu19C5UM-ucA85UAg/exec"; 
+        // 대리님의 GAS 배포 URL을 입력해주세요.
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbyI7f_779GqL_xZ5S_v6p0x7S_v6p0x7S_v6p0x/exec"; 
         let lockupData = [], curDate = new Date(), selDateStr = new Date().toISOString().split('T')[0];
 
         async function init() {
-            initSelectBoxes();
-            // 2번 해결: 데이터 로드 확인 로직 강화
-            await switchTab('lockup'); 
+            initMonthSelect();
+            await switchTab('lockup');
         }
 
-        function initSelectBoxes() {
-            const yearSelect = document.getElementById('select-year');
-            const monthSelect = document.getElementById('select-month');
-            for(let y=2024; y<=2035; y++) yearSelect.innerHTML += `<option value="${y}">${y}년</option>`;
-            for(let m=1; m<=12; m++) monthSelect.innerHTML += `<option value="${m-1}">${m}월</option>`;
-            updateSelectBoxes();
+        function initMonthSelect() {
+            const select = document.getElementById('select-month');
+            const startYear = 2024, endYear = 2030;
+            for (let y = startYear; y <= endYear; y++) {
+                for (let m = 0; m < 12; m++) {
+                    const opt = document.createElement('option');
+                    opt.value = `${y}-${m}`;
+                    opt.innerText = `${y}년 ${m + 1}월`;
+                    select.appendChild(opt);
+                }
+            }
+            updateSelectUI();
         }
 
-        function updateSelectBoxes() {
-            document.getElementById('select-year').value = curDate.getFullYear();
-            document.getElementById('select-month').value = curDate.getMonth();
+        function updateSelectUI() {
+            document.getElementById('select-month').value = `${curDate.getFullYear()}-${curDate.getMonth()}`;
         }
 
         function handleSelectChange() {
-            curDate = new Date(document.getElementById('select-year').value, document.getElementById('select-month').value, 1);
+            const [y, m] = document.getElementById('select-month').value.split('-');
+            curDate = new Date(y, m, 1);
+            renderCalendar();
+        }
+
+        function changeMonth(val) {
+            curDate.setMonth(curDate.getMonth() + val);
+            updateSelectUI();
             renderCalendar();
         }
 
         function goToday() {
             curDate = new Date();
             selDateStr = new Date().toISOString().split('T')[0];
-            updateSelectBoxes();
+            updateSelectUI();
             renderCalendar();
         }
 
@@ -138,15 +152,10 @@
                 const btnId = type === 'stock' ? 'btn-stock' : 'btn-sector';
                 document.getElementById(btnId).classList.add('active');
                 document.getElementById('view-other').style.display = 'block';
-                document.getElementById('other-list').innerHTML = '<div style="text-align:center; padding:50px 0;">데이터를 가져오는 중...</div>';
-                
-                try {
-                    const res = await fetch(`${GAS_URL}?type=${type}`);
-                    const json = await res.json();
-                    renderOtherList(json.data || [], type);
-                } catch(e) {
-                    document.getElementById('other-list').innerHTML = '<div style="text-align:center; padding:50px 0;">연결 실패. GAS 설정을 확인해주세요.</div>';
-                }
+                document.getElementById('other-list').innerHTML = '<div style="text-align:center; padding:50px 0;">데이터 로딩 중...</div>';
+                const res = await fetch(`${GAS_URL}?type=${type}`);
+                const json = await res.json();
+                renderOtherList(json.data || [], type);
             }
         }
 
@@ -175,13 +184,29 @@
         function renderLockupList() {
             const items = lockupData.filter(ev => ev.date === selDateStr);
             const box = document.getElementById('item-list');
+            const titleBox = document.getElementById('sel-date-txt');
+            const [y, m, d] = selDateStr.split('-');
+            titleBox.innerText = `${parseInt(m)}월 ${parseInt(d)}일 해제 일정`;
+
             if(items.length === 0) { box.innerHTML = '<div style="text-align:center; color:#8b95a1; padding:40px 0;">일정이 없습니다.</div>'; return; }
-            box.innerHTML = items.map(item => `<div class="card"><div><b>${item.name}</b><span>${item.market}</span></div><div style="text-align:right;"><b class="price-up">${(item.amount/1000).toLocaleString()}k</b><span>${(item.ratio*100).toFixed(1)}%</span></div></div>`).join('');
+            
+            // 4번 요청: 종목명, 시장, 해제일, 주식수(0,000 천 주), 비율 반영
+            box.innerHTML = items.map(item => `
+                <div class="card">
+                    <div>
+                        <b>${item.name}</b>
+                        <span>${item.market} · ${item.date}</span>
+                    </div>
+                    <div class="info-right">
+                        <b class="price-up">${Number(item.amount/1000).toLocaleString()} 천 주</b>
+                        <span>${(item.ratio*100).toFixed(2)}%</span>
+                    </div>
+                </div>
+            `).join('');
         }
 
         function renderOtherList(data, type) {
             const box = document.getElementById('other-list');
-            if(data.length === 0) { box.innerHTML = '<div style="text-align:center; padding:50px 0;">조회된 데이터가 없습니다.</div>'; return; }
             box.innerHTML = data.map(item => `
                 <div class="card">
                     <div><b>${item.rank ? item.rank + '. ' : ''}${item.name}</b><span>${item.status || ''}</span></div>
