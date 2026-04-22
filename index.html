@@ -7,39 +7,40 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-        :root { --toss-blue: #3182f6; --toss-bg: #f2f4f6; --toss-text: #191f28; --toss-sub: #8b95a1; --up: #f04452; --down: #3182f6; }
+        :root { --toss-blue: #3182f6; --toss-bg: #f2f4f6; --toss-text: #191f28; --toss-sub: #8b95a1; --up: #f04452; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Pretendard', sans-serif; }
         body { background: #fff; margin: 0; color: var(--toss-text); overflow-x: hidden; }
         .wrapper { max-width: 500px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
         
-        /* 헤더 & 검색창 */
-        .header-container { padding: 24px 20px 10px; background: #fff; }
+        /* 헤더 및 검색창 */
+        .header-container { padding: 24px 20px 10px; }
         .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
         .header-top h1 { font-size: 24px; font-weight: 700; margin: 0; }
+        
         .search-area { position: relative; margin-bottom: 10px; }
         .search-input { width: 100%; padding: 12px 16px 12px 40px; background: var(--toss-bg); border: none; border-radius: 12px; font-size: 15px; outline: none; }
         .search-icon { position: absolute; left: 14px; top: 14px; color: var(--toss-sub); }
-        .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: #fff; z-index: 1000; border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); max-height: 250px; overflow-y: auto; display: none; }
+        
+        /* 자동완성 목록 */
+        .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: #fff; z-index: 1000; border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); max-height: 300px; overflow-y: auto; display: none; margin-top: 5px; }
         .autocomplete-item { padding: 14px 20px; border-bottom: 1px solid #f2f4f6; cursor: pointer; }
+        .autocomplete-item:last-child { border-bottom: none; }
+        .autocomplete-item b { display: block; font-size: 15px; }
+        .autocomplete-item span { font-size: 12px; color: var(--toss-sub); }
 
-        /* 탭 디자인 */
+        /* 탭 */
         .tabs { display: flex; padding: 0 20px; gap: 24px; border-bottom: 1px solid #f2f4f6; background: #fff; position: sticky; top: 0; z-index: 100; }
         .tab-item { padding: 16px 0; font-size: 16px; font-weight: 600; color: var(--toss-sub); cursor: pointer; position: relative; }
         .tab-item.active { color: var(--toss-text); }
         .tab-item.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--toss-text); }
 
-        /* 메인 슬라이더 (탭별) */
-        .main-slider { display: flex; transition: transform 0.3s ease; width: 300%; flex: 1; }
-        .view-page { width: 33.3333%; min-height: 100%; display: flex; flex-direction: column; overflow: hidden; }
-
-        /* 내부 슬라이더 (인기종목 5개씩, 업종 상/하락) */
-        .sub-slider-container { overflow: hidden; width: 100%; position: relative; }
-        .sub-slider { display: flex; transition: transform 0.3s ease; width: 100%; }
-        .sub-slide-page { min-width: 100%; padding: 0 20px; }
-
-        /* 캘린더 디자인 */
+        /* 캘린더 */
         .cal-ctrl { display: flex; justify-content: space-between; align-items: center; padding: 20px; }
-        .cal-select { font-size: 18px; font-weight: 700; border: none; background: none; color: var(--toss-text); outline: none; cursor: pointer; }
+        .cal-nav { display: flex; align-items: center; gap: 8px; }
+        .nav-btn { border: none; background: none; font-size: 18px; color: var(--toss-sub); cursor: pointer; padding: 5px; }
+        .cal-select { font-size: 18px; font-weight: 700; border: none; background: none; cursor: pointer; color: var(--toss-text); outline: none; }
+        .today-btn { padding: 6px 12px; background: var(--toss-bg); color: var(--toss-blue); border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; }
+
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); padding: 0 10px; text-align: center; }
         .day-label { color: var(--toss-sub); font-size: 12px; padding: 10px 0; }
         .date-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-weight: 500; cursor: pointer; position: relative; font-size: 15px; border-radius: 12px; }
@@ -47,26 +48,23 @@
         .date-cell.today { color: var(--toss-blue); font-weight: 800; border: 1px solid var(--toss-blue); }
         .dot::after { content: ''; width: 4px; height: 4px; background: var(--up); border-radius: 50%; position: absolute; bottom: 6px; }
 
-        /* 카드 리스트 */
-        .list-section { background: var(--toss-bg); padding: 24px 20px; flex: 1; border-radius: 32px 32px 0 0; min-height: 400px; margin-top: 10px; }
-        .card { background: #fff; padding: 18px; border-radius: 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.03); cursor: pointer; }
+        /* 리스트 */
+        .list-section { background: var(--toss-bg); padding: 24px 20px; flex: 1; border-radius: 32px 32px 0 0; margin-top: 10px; min-height: 400px; }
+        .card { background: #fff; padding: 18px; border-radius: 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
         .card b { font-size: 16px; display: block; margin-bottom: 4px; }
         .card span { font-size: 12px; color: var(--toss-sub); font-weight: 500; }
         .info-right { text-align: right; }
         .price-up { color: var(--up); font-weight: 700; font-size: 15px; }
-        .price-down { color: var(--down); font-weight: 700; font-size: 15px; }
-
-        /* 페이지 네비게이션 점 */
-        .page-dots { display: flex; justify-content: center; gap: 8px; padding: 10px 0; background: var(--toss-bg); }
-        .dot-item { width: 6px; height: 6px; border-radius: 50%; background: #d1d6db; transition: 0.3s; }
-        .dot-item.active { width: 18px; border-radius: 3px; background: var(--toss-sub); }
     </style>
 </head>
 <body>
     <div class="wrapper">
         <div class="header-container">
-            <div class="header-top"><h1>자산</h1><button onclick="location.reload()" style="border:none; background:none; color:var(--toss-sub);"><i class="fas fa-sync-alt"></i></button></div>
-            <div id="search-container" class="search-area">
+            <div class="header-top">
+                <h1>자산</h1>
+                <button class="nav-btn" onclick="location.reload()"><i class="fas fa-sync-alt"></i></button>
+            </div>
+            <div class="search-area">
                 <i class="fas fa-search search-icon"></i>
                 <input type="text" id="search-input" class="search-input" placeholder="종목명 또는 종목코드 검색" oninput="handleSearch(this.value)">
                 <div id="autocomplete-list" class="autocomplete-list"></div>
@@ -74,47 +72,33 @@
         </div>
 
         <div class="tabs">
-            <div class="tab-item active" id="tab-0" onclick="moveSlide(0)">보호예수</div>
-            <div class="tab-item" id="tab-1" onclick="moveSlide(1)">인기종목</div>
-            <div class="tab-item" id="tab-2" onclick="moveSlide(2)">업종시세</div>
+            <div class="tab-item active" id="btn-lockup" onclick="switchTab('lockup')">보호예수</div>
+            <div class="tab-item" id="btn-stock" onclick="switchTab('stock')">인기종목</div>
+            <div class="tab-item" id="btn-sector" onclick="switchTab('sector')">업종시세</div>
         </div>
 
-        <div class="main-slider" id="main-slider">
-            <div class="view-page">
-                <div class="cal-ctrl">
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <button onclick="changeMonth(-1)" style="border:none; background:none;"><i class="fas fa-chevron-left"></i></button>
-                        <select id="select-month" class="cal-select" onchange="handleSelectChange()"></select>
-                        <button onclick="changeMonth(1)" style="border:none; background:none;"><i class="fas fa-chevron-right"></i></button>
-                    </div>
-                    <button onclick="goToday()" style="padding:6px 12px; background:var(--toss-bg); color:var(--toss-blue); border:none; border-radius:8px; font-weight:600;">오늘</button>
+        <div id="view-lockup">
+            <div class="cal-ctrl">
+                <div class="cal-nav">
+                    <button class="nav-btn" onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                    <select id="select-month" class="cal-select" onchange="handleSelectChange()"></select>
+                    <button class="nav-btn" onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
                 </div>
-                <div class="cal-grid" id="cal-body"></div>
-                <div class="list-section" id="item-list"></div>
+                <button class="today-btn" onclick="goToday()">오늘</button>
             </div>
-            
-            <div class="view-page">
-                <div class="list-section">
-                    <div class="sub-slider-container">
-                        <div class="sub-slider" id="stock-slider"></div>
-                    </div>
-                    <div class="page-dots" id="stock-dots"></div>
-                </div>
-            </div>
+            <div class="cal-grid" id="cal-body"></div>
+            <div class="list-section" id="item-list"></div>
+        </div>
 
-            <div class="view-page">
-                <div class="list-section">
-                    <div class="sub-slider-container">
-                        <div class="sub-slider" id="sector-slider"></div>
-                    </div>
-                    <div class="page-dots" id="sector-dots"></div>
-                </div>
-            </div>
+        <div id="view-other" style="display:none;" class="list-section">
+            <div id="other-list"></div>
         </div>
     </div>
 
     <script>
+        // 요청하신 새로운 GAS 주소 반영
         const GAS_URL = "https://script.google.com/macros/s/AKfycbxQTP2WpINbKU3cPu2j38V0s1-B24-PsJhU5jfvMw0onDjDa_KCEFu19C5UM-ucA85UAg/exec"; 
+        
         let lockupData = [], curDate = new Date(), selDateStr = "";
 
         async function init() {
@@ -122,116 +106,50 @@
             curDate = new Date(now.getFullYear(), now.getMonth(), 1);
             selDateStr = now.toISOString().split('T')[0];
             initMonthSelect();
-            renderCalendar();
-            fetchData('lockup');
-            fetchData('stock');
-            fetchData('sector');
+            await switchTab('lockup'); 
         }
 
         function initMonthSelect() {
             const select = document.getElementById('select-month');
+            select.innerHTML = "";
             for (let y = 2024; y <= 2027; y++) {
                 for (let m = 0; m < 12; m++) {
                     const opt = document.createElement('option');
-                    opt.value = `${y}-${m}`; opt.innerText = `${y}년 ${m + 1}월`;
+                    opt.value = `${y}-${m}`;
+                    opt.innerText = `${y}년 ${m + 1}월`;
                     select.appendChild(opt);
                 }
             }
-            select.value = `${curDate.getFullYear()}-${curDate.getMonth()}`;
+            updateSelectUI();
         }
 
-        function moveSlide(idx) {
-            document.getElementById('main-slider').style.transform = `translateX(-${idx * 33.3333}%)`;
-            document.querySelectorAll('.tab-item').forEach((t, i) => t.classList.toggle('active', i === idx));
-            document.getElementById('search-container').style.visibility = (idx === 0) ? 'visible' : 'hidden';
+        function updateSelectUI() { document.getElementById('select-month').value = `${curDate.getFullYear()}-${curDate.getMonth()}`; }
+        function handleSelectChange() { const [y, m] = document.getElementById('select-month').value.split('-'); curDate = new Date(y, m, 1); renderCalendar(); }
+        function changeMonth(v) { curDate.setMonth(curDate.getMonth() + v); updateSelectUI(); renderCalendar(); }
+        function goToday() { const now = new Date(); curDate = new Date(now.getFullYear(), now.getMonth(), 1); selDateStr = now.toISOString().split('T')[0]; updateSelectUI(); renderCalendar(); }
+
+        async function switchTab(type) {
+            document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+            document.getElementById('view-lockup').style.display = type === 'lockup' ? 'block' : 'none';
+            document.getElementById('view-other').style.display = type === 'lockup' ? 'none' : 'block';
+            document.getElementById(`btn-${type}`).classList.add('active');
+
+            try {
+                const res = await fetch(`${GAS_URL}?type=${type}`);
+                const json = await res.json();
+                if(type === 'lockup') { lockupData = json.data || []; renderCalendar(); }
+                else { renderOtherList(json.data || []); }
+            } catch(e) { console.error(e); if(type === 'lockup') renderCalendar(); }
         }
 
-        async function fetchData(type) {
-            const res = await fetch(`${GAS_URL}?type=${type}`);
-            const json = await res.json();
-            if(type === 'lockup') { lockupData = json.data; renderCalendar(); }
-            else if(type === 'stock') { renderStockSlider(json.data); }
-            else if(type === 'sector') { renderSectorSlider(json.data); }
-        }
-
-        // 인기종목 5개씩 슬라이드
-        function renderStockSlider(data) {
-            const slider = document.getElementById('stock-slider');
-            const dots = document.getElementById('stock-dots');
-            const pageSize = 5;
-            const pages = Math.ceil(data.length / pageSize);
-            slider.style.width = `${pages * 100}%`;
-            
-            let html = '', dotHtml = '';
-            for(let i=0; i<pages; i++) {
-                const chunk = data.slice(i * pageSize, (i + 1) * pageSize);
-                html += `<div class="sub-slide-page">` + chunk.map(item => {
-                    const isDown = String(item.rate).includes('-') || String(item.rate).includes('▼');
-                    return `<div class="card" onclick="handleStockClick('${item.name}', '${item.code}')">
-                        <div><b>${item.rank}. ${item.name}</b><span>${item.status || ''}</span></div>
-                        <div class="info-right"><b class="${isDown ? 'price-down' : 'price-up'}">${item.rate}</b><span>${item.price}</span></div>
-                    </div>`;
-                }).join('') + `</div>`;
-                dotHtml += `<div class="dot-item ${i===0?'active':''}" id="stock-dot-${i}"></div>`;
-            }
-            slider.innerHTML = html; dots.innerHTML = dotHtml;
-
-            // 터치 슬라이드 간소화 (클릭 이동은 추후 필요시 추가)
-            let startX = 0, currentIdx = 0;
-            slider.ontouchstart = e => startX = e.touches[0].clientX;
-            slider.ontouchend = e => {
-                let diff = startX - e.changedTouches[0].clientX;
-                if(Math.abs(diff) > 50) {
-                    currentIdx = diff > 0 ? Math.min(currentIdx+1, pages-1) : Math.max(currentIdx-1, 0);
-                    slider.style.transform = `translateX(-${(currentIdx * 100) / pages}%)`;
-                    document.querySelectorAll('#stock-dots .dot-item').forEach((d, i) => d.classList.toggle('active', i === currentIdx));
-                }
-            };
-        }
-
-        // 업종 상/하락 슬라이드
-        function renderSectorSlider(data) {
-            const upSectors = data.filter(d => !String(d.rate).includes('-') && !String(d.rate).includes('▼'));
-            const downSectors = data.filter(d => String(d.rate).includes('-') || String(d.rate).includes('▼'));
-            const slider = document.getElementById('sector-slider');
-            const dots = document.getElementById('sector-dots');
-            slider.style.width = `200%`;
-
-            const renderPage = (list, title) => `<div class="sub-slide-page"><div style="font-weight:700; margin-bottom:15px; color:var(--toss-sub)">${title}</div>` + list.map(item => `
-                <div class="card">
-                    <div><b>${item.name}</b><span>업종</span></div>
-                    <div class="info-right"><b class="${title === '상승 업종' ? 'price-up' : 'price-down'}">${item.rate}</b><span>${item.status || ''}</span></div>
-                </div>`).join('') + `</div>`;
-
-            slider.innerHTML = renderPage(upSectors, '상승 업종') + renderPage(downSectors, '하락 업종');
-            dots.innerHTML = `<div class="dot-item active" id="sec-dot-0"></div><div class="dot-item" id="sec-dot-1"></div>`;
-
-            let startX = 0, currentIdx = 0;
-            slider.ontouchstart = e => startX = e.touches[0].clientX;
-            slider.ontouchend = e => {
-                let diff = startX - e.changedTouches[0].clientX;
-                if(Math.abs(diff) > 50) {
-                    currentIdx = diff > 0 ? 1 : 0;
-                    slider.style.transform = `translateX(-${currentIdx * 50}%)`;
-                    document.querySelectorAll('#sector-dots .dot-item').forEach((d, i) => d.classList.toggle('active', i === currentIdx));
-                }
-            };
-        }
-
-        function handleStockClick(name, code) {
-            if(!code || code === 'undefined') return;
-            if(confirm(`${name} 종합정보로 이동할까요?`)) {
-                window.open(`https://finance.naver.com/item/main.naver?code=${code}`, '_blank');
-            }
-        }
-
-        // --- 보호예수 로직 (기존 유지) ---
         function renderCalendar() {
             const y = curDate.getFullYear(), m = curDate.getMonth();
             const body = document.getElementById('cal-body');
             body.innerHTML = '<div class="day-label">일</div><div class="day-label">월</div><div class="day-label">화</div><div class="day-label">수</div><div class="day-label">목</div><div class="day-label">금</div><div class="day-label">토</div>';
+            
             const first = new Date(y, m, 1).getDay(), last = new Date(y, m+1, 0).getDate();
             const todayStr = new Date().toISOString().split('T')[0];
+
             for(let i=0; i<first; i++) body.innerHTML += '<div></div>';
             for(let d=1; d<=last; d++) {
                 const dStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
@@ -242,39 +160,68 @@
                 cell.onclick = () => { selDateStr = dStr; renderCalendar(); };
                 body.appendChild(cell);
             }
-            renderLockupList();
+            renderList();
         }
 
-        function renderLockupList() {
-            const items = lockupData.filter(ev => ev.date === selDateStr || String(ev.date).includes(`${parseInt(selDateStr.split('-')[1])}.${parseInt(selDateStr.split('-')[2])}`));
+        function renderList() {
+            const items = lockupData.filter(ev => {
+                const [y, m, d] = selDateStr.split('-');
+                return ev.date === selDateStr || String(ev.date).includes(`${parseInt(m)}.${parseInt(d)}`);
+            });
             const box = document.getElementById('item-list');
-            box.innerHTML = items.length === 0 ? '<div style="text-align:center; padding:40px; color:#8b95a1;">일정이 없습니다.</div>' : items.map(item => `
+            if(items.length === 0) { box.innerHTML = '<div style="text-align:center; padding:40px; color:#8b95a1;">일정이 없습니다.</div>'; return; }
+            
+            box.innerHTML = items.map(item => {
+                const ratioVal = parseFloat(item.ratio) < 1 ? (parseFloat(item.ratio) * 100).toFixed(2) : parseFloat(item.ratio);
+                const amountVal = Math.round(Number(item.amount)/1000).toLocaleString();
+                return `
                 <div class="card">
                     <div><b>${item.name}</b><span>${item.market || '주식'} · ${item.date}</span></div>
-                    <div class="info-right"><b class="price-up">해제물량 ${Math.round(Number(item.amount)/1000).toLocaleString()} 천 주</b><span>비율 ${(parseFloat(item.ratio) < 1 ? item.ratio*100 : item.ratio).toFixed(2)}%</span></div>
-                </div>`).join('');
+                    <div class="info-right">
+                        <b class="price-up">해제물량 ${amountVal} 천 주</b>
+                        <span>비율 ${ratioVal}%</span>
+                    </div>
+                </div>`;
+            }).join('');
         }
 
+        // 종목코드 검색 연동 (표시되지는 않으나 검색은 가능)
         function handleSearch(val) {
             const list = document.getElementById('autocomplete-list');
             if(!val) { list.style.display = 'none'; return; }
-            const filtered = lockupData.filter(d => (d.name && d.name.includes(val)) || (d.code && String(d.code).includes(val)));
+            
+            const filtered = lockupData.filter(d => 
+                (d.name && d.name.includes(val)) || (d.code && String(d.code).includes(val))
+            );
+            
             if(filtered.length > 0) {
                 list.style.display = 'block';
-                list.innerHTML = filtered.slice(0, 10).map(d => `<div class="autocomplete-item" onclick="selectSearch('${d.date}')"><b>${d.name}</b><span>해제일: ${d.date}</span></div>`).join('');
+                list.innerHTML = filtered.slice(0, 10).map(d => `
+                    <div class="autocomplete-item" onclick="selectSearch('${d.date}')">
+                        <b>${d.name}</b>
+                        <span>해제일: ${d.date} · 물량: ${Math.round(d.amount/1000).toLocaleString()}k</span>
+                    </div>
+                `).join('');
             } else { list.style.display = 'none'; }
         }
 
         function selectSearch(date) {
-            const target = new Date(date); curDate = new Date(target.getFullYear(), target.getMonth(), 1); selDateStr = date;
-            document.getElementById('select-month').value = `${target.getFullYear()}-${target.getMonth()}`;
-            renderCalendar(); document.getElementById('autocomplete-list').style.display = 'none'; document.getElementById('search-input').value = "";
+            const target = new Date(date);
+            curDate = new Date(target.getFullYear(), target.getMonth(), 1);
+            selDateStr = date;
+            updateSelectUI();
+            renderCalendar();
+            document.getElementById('autocomplete-list').style.display = 'none';
+            document.getElementById('search-input').value = "";
         }
 
-        function handleSelectChange() { const [y, m] = document.getElementById('select-month').value.split('-'); curDate = new Date(y, m, 1); renderCalendar(); }
-        function changeMonth(v) { curDate.setMonth(curDate.getMonth() + v); document.getElementById('select-month').value = `${curDate.getFullYear()}-${curDate.getMonth()}`; renderCalendar(); }
-        function goToday() { const now = new Date(); curDate = new Date(now.getFullYear(), now.getMonth(), 1); selDateStr = now.toISOString().split('T')[0]; document.getElementById('select-month').value = `${now.getFullYear()}-${now.getMonth()}`; renderCalendar(); }
-
+        function renderOtherList(data) {
+            document.getElementById('other-list').innerHTML = data.map(item => `
+                <div class="card">
+                    <div><b>${item.rank ? item.rank + '. ' : ''}${item.name}</b><span>${item.status || ''}</span></div>
+                    <div class="info-right"><b class="${String(item.rate).includes('-') ? 'price-down' : 'price-up'}">${item.rate}</b><span>${item.price || ''}</span></div>
+                </div>`).join('');
+        }
         init();
     </script>
 </body>
